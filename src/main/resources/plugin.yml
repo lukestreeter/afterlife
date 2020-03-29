@@ -1,0 +1,5 @@
+name: AfterLifePlugin
+version: ${project.version}
+main: me.yodeling_goat.afterlifeplugin.AfterLifePlugin
+api-version: 1.13
+description: send your players to heaven or hell!

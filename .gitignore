@@ -1,0 +1,8 @@
+### OS Specific
+.DS_STORE
+
+### IDE
+.idea
+
+### BUILD ARTIFACTS
+targetls
