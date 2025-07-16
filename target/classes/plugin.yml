@@ -1,5 +1,0 @@
-name: AfterLifePlugin
-version: 1.0-SNAPSHOT
-main: me.yodeling_goat.afterlifeplugin.AfterLifePlugin
-api-version: 1.13
-description: send your players to heaven or hell!
