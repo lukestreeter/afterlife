@@ -27,6 +27,11 @@ These tools are not required but they make the development process much easier
   - once revived your max health will go down by one half heart
 - we want to design a grave stone
 - the treasure chest that shows up upon death should have a message (that cannot be changed) that describes who and how the chests owner died - the chest can be destroyed but all curses would be levied
+-Karma!!! If you die with bad karma your grave will be filled with very little curses so you have a decreased chance of coming back. If you have good Karma you will have tons of curses giving protection to your stuff. Curses will worsen you if you have bad karma but if you have good you the curses will benefit you. A good amount of those curses will make you swap with the person who is robbing you.
+Karma will be accounted for by: Damage done to players and animals
+Villagers count too! Stealing from Villagers will go against you!
+You can lose and regain Karma!
+- make it so when you're dead the mobs, hostile or otherwise (except for cats or witches) do not see you.
 
 
 [minecraft]: https://www.minecraft.net
