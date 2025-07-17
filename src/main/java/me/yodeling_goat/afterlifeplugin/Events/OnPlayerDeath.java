@@ -15,6 +15,10 @@ import org.bukkit.event.player.PlayerPickupItemEvent;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
+import org.bukkit.Material;
+import org.bukkit.block.Block;
+import org.bukkit.block.Chest;
+import org.bukkit.inventory.ItemStack;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -32,6 +36,8 @@ public class OnPlayerDeath implements Listener {
 		Player player = (Player) entity;
 		if (isFatal(event, player)) {
 			event.setCancelled(true);
+			// Place chest at death location and transfer inventory
+			placeChestAtLocation(player.getLocation(), player);
 			player.addPotionEffect(new PotionEffect(PotionEffectType.CONFUSION, 300, 50));
 			player.addPotionEffect(new PotionEffect(PotionEffectType.BLINDNESS, 300, 50));
 			sendToAfterlife(player);
@@ -54,13 +60,16 @@ public class OnPlayerDeath implements Listener {
 			player.addPotionEffect(new PotionEffect(PotionEffectType.CONFUSION, 300, 50));
 			player.addPotionEffect(new PotionEffect(PotionEffectType.BLINDNESS, 300, 50));
 			
+			// Place chest at death location and transfer inventory
+			placeChestAtLocation(player.getLocation(), player);
+			
 			// Send to afterlife
 			sendToAfterlife(player);
 		}
 	}
 
 	private boolean isFatal(EntityDamageEvent event, Player player) {
-		player.sendMessage("checking if this damage will hurt you - why so serious");
+		player.sendMessage("Careful! You've taken damage and will be temporarily restricted from playing if you die!");
 		// determine how much damage dealt in event
 		// determine damage reduction of armor
 		double damage = event.getFinalDamage();
@@ -157,4 +166,31 @@ public class OnPlayerDeath implements Listener {
 	public static void removeFromAfterlife(Player player) {
 		afterlifePlayers.remove(player);
 	}
+
+    // Place a chest at the given location and transfer player's inventory to it
+    private void placeChestAtLocation(Location location, Player player) {
+        // Get the block at the player's location
+        Block block = location.getBlock();
+        // Set the block to a chest
+        block.setType(Material.CHEST);
+        
+        // Get the chest state and its inventory
+        Chest chest = (Chest) block.getState();
+        org.bukkit.inventory.Inventory chestInventory = chest.getInventory();
+        
+        // Transfer all items from player's inventory to the chest
+        ItemStack[] playerItems = player.getInventory().getContents();
+        for (ItemStack item : playerItems) {
+            if (item != null) {
+                chestInventory.addItem(item);
+            }
+        }
+        // Transfer armor items
+        ItemStack[] armorItems = player.getInventory().getArmorContents();
+        for (ItemStack item : armorItems) {
+            if (item != null) {
+                chestInventory.addItem(item);
+            }
+        }
+    }
 }
