@@ -23,7 +23,7 @@ These tools are not required but they make the development process much easier
 # UPCOMING FEATURES
 
 - upon death your stuff is transported to a chest at the location of your death
-  - if someone opens it they can steal but a couple of random things will be cursed with the risk of killing them or swapping places with the dead person who they are stealing from (which will place another chest where the robber died) -- and then the revived player can steal too
+  - if someone opens it they can steal but a couple of random things will be cursed with the risk of killing them or swapping places with the dead person who they are stealing from (which will place another chest where the robber died) -- and then the revived player can steal too Curses: Poison, Max Health decreased or taken from dead player.
   - once revived your max health will go down by one half heart
 - we want to design a grave stone
 - the treasure chest that shows up upon death should have a message (that cannot be changed) that describes who and how the chests owner died - the chest can be destroyed but all curses would be levied
@@ -32,7 +32,9 @@ Karma will be accounted for by: Damage done to players and animals
 Villagers count too! Stealing from Villagers will go against you!
 You can lose and regain Karma!
 - make it so when you're dead the mobs, hostile or otherwise (except for cats or witches) do not see you.
-
+-Possesion of Entities
+-Different levels of Graves in different dimensions: Depends on your Karma and EXP earned!
+It could also depend on what you have built, materials you've used, entities you've killed, resources you've collected!
 
 [minecraft]: https://www.minecraft.net
 [spigot]: https://www.spigotmc.org/
