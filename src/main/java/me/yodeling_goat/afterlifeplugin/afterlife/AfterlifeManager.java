@@ -44,15 +44,15 @@ public class AfterlifeManager {
         // Apply semi-transparent effect
         // Make player invisible but keep their outline
         player.addPotionEffect(new PotionEffect(PotionEffectType.INVISIBILITY, Integer.MAX_VALUE, 0, false, false));
-        player.addPotionEffect(new PotionEffect(PotionEffectType.GLOWING, Integer.MAX_VALUE, 0, false, false));
+        player.addPotionEffect(new PotionEffect(PotionEffectType.GLOWING, Integer.MAX_VALUE, 1, false, false)); // Increased amplifier to 1 for stronger glow
         
-        // Create a team with translucent color
+        // Create a team with more vibrant color
         org.bukkit.scoreboard.Scoreboard scoreboard = Bukkit.getScoreboardManager().getMainScoreboard();
         org.bukkit.scoreboard.Team team = scoreboard.getTeam("translucent");
         if (team == null) {
             team = scoreboard.registerNewTeam("translucent");
         }
-        team.setColor(org.bukkit.ChatColor.GRAY); // This affects the glow color
+        team.setColor(org.bukkit.ChatColor.WHITE); // Changed to WHITE for stronger visibility
         team.addPlayer(player);
         
         // Reapply permanent potion effects
