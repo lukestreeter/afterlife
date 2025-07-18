@@ -9,7 +9,9 @@ import org.bukkit.event.player.PlayerPickupItemEvent;
 import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityCombustEvent;
+import org.bukkit.event.entity.EntityTargetEvent;
 import org.bukkit.entity.Player;
+import org.bukkit.entity.Mob;
 import me.yodeling_goat.afterlifeplugin.afterlife.events.PlayerEnterAfterlifeEvent;
 import me.yodeling_goat.afterlifeplugin.afterlife.AfterlifeManager;
 
@@ -66,6 +68,16 @@ public class AfterlifeRestrictionListener implements Listener {
     public void onEntityCombust(EntityCombustEvent event) {
         if (event.getEntity() instanceof Player) {
             Player player = (Player) event.getEntity();
+            if (AfterlifeManager.isInAfterlife(player)) {
+                event.setCancelled(true);
+            }
+        }
+    }
+
+    @EventHandler
+    public void onEntityTarget(EntityTargetEvent event) {
+        if (event.getTarget() instanceof Player) {
+            Player player = (Player) event.getTarget();
             if (AfterlifeManager.isInAfterlife(player)) {
                 event.setCancelled(true);
             }
