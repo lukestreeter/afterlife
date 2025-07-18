@@ -19,6 +19,7 @@ public class AfterlifeManager {
 
     public static void removeFromAfterlife(Player player) {
         afterlifePlayers.remove(player);
+        removeAfterlifeEffects(player);
     }
 
     public static boolean isInAfterlife(Player player) {
@@ -40,8 +41,21 @@ public class AfterlifeManager {
         player.setAllowFlight(true);
         player.setFlying(true);
         
-        // Reapply permanent potion effects
+        // Apply semi-transparent effect
+        // Make player invisible but keep their outline
+        player.addPotionEffect(new PotionEffect(PotionEffectType.INVISIBILITY, Integer.MAX_VALUE, 0, false, false));
         player.addPotionEffect(new PotionEffect(PotionEffectType.GLOWING, Integer.MAX_VALUE, 0, false, false));
+        
+        // Create a team with translucent color
+        org.bukkit.scoreboard.Scoreboard scoreboard = Bukkit.getScoreboardManager().getMainScoreboard();
+        org.bukkit.scoreboard.Team team = scoreboard.getTeam("translucent");
+        if (team == null) {
+            team = scoreboard.registerNewTeam("translucent");
+        }
+        team.setColor(org.bukkit.ChatColor.GRAY); // This affects the glow color
+        team.addPlayer(player);
+        
+        // Reapply permanent potion effects
         player.addPotionEffect(new PotionEffect(PotionEffectType.NIGHT_VISION, Integer.MAX_VALUE, 0, false, false));
         
         // Clear inventory (since afterlife players shouldn't have items)
@@ -65,5 +79,23 @@ public class AfterlifeManager {
         // Apply both permanent and temporary effects (for new afterlife entry)
         applyPermanentAfterlifeEffects(player);
         applyTemporaryAfterlifeEffects(player);
+    }
+    
+    public static void removeAfterlifeEffects(Player player) {
+        // Remove invisibility and glowing effects
+        player.removePotionEffect(PotionEffectType.INVISIBILITY);
+        player.removePotionEffect(PotionEffectType.GLOWING);
+        player.removePotionEffect(PotionEffectType.NIGHT_VISION);
+        
+        // Remove player from translucent team
+        org.bukkit.scoreboard.Scoreboard scoreboard = Bukkit.getScoreboardManager().getMainScoreboard();
+        org.bukkit.scoreboard.Team team = scoreboard.getTeam("translucent");
+        if (team != null) {
+            team.removePlayer(player);
+        }
+        
+        // Disable flight
+        player.setAllowFlight(false);
+        player.setFlying(false);
     }
 } 
