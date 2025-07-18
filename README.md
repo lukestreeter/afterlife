@@ -36,6 +36,9 @@ You can lose and regain Karma!
 -Different levels of Graves in different dimensions: Depends on your Karma and EXP earned!
 It could also depend on what you have built, materials you've used, entities you've killed, resources you've collected!
 -Need to have a way to schedule different Karmas. So you can have different amount of Karmas different days- One day you can get 0 karma from nothing and one day you can get a lot and one day where you can get negative karma. There can also be rewards for reaching certain milestones in Karma! 
+- A comppass that serves as a navigator to other worlds/dimension when in the afterlife!
+- A lobby to select different gamemodes? Hardcore Survival or something crazy that we might stir up!
+
 
 [minecraft]: https://www.minecraft.net
 [spigot]: https://www.spigotmc.org/
