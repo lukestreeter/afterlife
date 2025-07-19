@@ -40,7 +40,8 @@ public class AfterlifeRestrictionListener implements Listener {
 
     @EventHandler
     public void onPlayerPickupItem(PlayerPickupItemEvent event) {
-        if (AfterlifeManager.isInAfterlife(event.getPlayer()) && !MobMorphManager.isMorphed(event.getPlayer())) {
+        if (AfterlifeManager.isInAfterlife(event.getPlayer())) {
+            // Always prevent afterlife players from picking up items, whether morphed or not
             event.setCancelled(true);
         }
     }

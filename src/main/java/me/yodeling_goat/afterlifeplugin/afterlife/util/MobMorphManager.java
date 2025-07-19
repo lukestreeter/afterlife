@@ -39,9 +39,12 @@ public class MobMorphManager implements Listener {
     private static final HashMap<UUID, BukkitRunnable> movementTasks = new HashMap<>();
     private static final HashMap<UUID, Long> lastMovementTime = new HashMap<>();
     private static final HashMap<UUID, Long> lastAttackTime = new HashMap<>();
+    private static final HashMap<UUID, Long> morphStartTime = new HashMap<>();
+    private static final HashMap<UUID, BukkitRunnable> morphTimerTasks = new HashMap<>();
     
     private static final String EXIT_MORPH_NAME = ChatColor.RED + "Exit Morph";
     private static final String EXIT_MORPH_LORE = ChatColor.YELLOW + "Left Click to exit morph mode!";
+    private static final long MORPH_DURATION = 90000; // 1:30 in milliseconds
     
     private static Plugin plugin;
     
@@ -83,6 +86,9 @@ public class MobMorphManager implements Listener {
         // Start movement task
         startMovementTask(player, target);
         
+        // Start morph timer
+        startMorphTimer(player, target);
+        
         // Give exit item
         giveExitMorphItem(player);
         
@@ -101,11 +107,13 @@ public class MobMorphManager implements Listener {
             return;
         }
         
+        // Get the morphed entity before cleanup
+        Entity morphedEntity = morphedPlayers.get(playerId);
+        
         // Stop movement task
         stopMovementTask(player);
         
         // Restore the original mob's vulnerability
-        Entity morphedEntity = morphedPlayers.get(playerId);
         if (morphedEntity instanceof Mob) {
             Mob mob = (Mob) morphedEntity;
             mob.setInvulnerable(false);
@@ -134,6 +142,15 @@ public class MobMorphManager implements Listener {
         movementTasks.remove(playerId);
         lastMovementTime.remove(playerId);
         lastAttackTime.remove(playerId);
+        morphStartTime.remove(playerId);
+        
+        // Stop and clean up timer task
+        stopMorphTimer(player);
+        
+        // Explode the morphed entity
+        explodeMorphedEntity(player, morphedEntity);
+        
+        player.sendMessage(ChatColor.AQUA + "You have exited morph mode!");
     }
     
     public static boolean isMorphed(Player player) {
@@ -173,7 +190,6 @@ public class MobMorphManager implements Listener {
                     if (target instanceof LivingEntity) {
                         LivingEntity targetEntity = (LivingEntity) target;
                         targetEntity.damage(4.0, livingMob);
-                        player.sendMessage(ChatColor.RED + "You attacked " + targetEntity.getName() + "!");
                     }
                 });
             
@@ -230,7 +246,6 @@ public class MobMorphManager implements Listener {
                     
                     // Shoot laser projectile at target
                     shootLaserProjectile(morphedEntity, target, player);
-                    player.sendMessage(ChatColor.RED + "Your " + morphedEntity.getName() + " shot laser eyes at " + target.getName() + "!");
                 } else if (target == player) {
                     // If player is targeting themselves, show a message
                     player.sendMessage(ChatColor.YELLOW + "You can't shoot yourself!");
@@ -239,7 +254,6 @@ public class MobMorphManager implements Listener {
                     Location blockTarget = getBlockTarget(player, 100.0);
                     if (blockTarget != null) {
                         shootLaserAtBlock(morphedEntity, blockTarget, player);
-                        player.sendMessage(ChatColor.RED + "Your " + morphedEntity.getName() + " shot laser eyes at " + blockTarget.getBlock().getType().name() + "!");
                     } else {
                         // If no specific target, attack nearby entities like before
                         livingMob.getNearbyEntities(5, 5, 5).stream()
@@ -248,7 +262,6 @@ public class MobMorphManager implements Listener {
                             .ifPresent(nearbyTarget -> {
                                 // Shoot laser projectile at nearby target
                                 shootLaserProjectile(morphedEntity, nearbyTarget, player);
-                                player.sendMessage(ChatColor.RED + "Your " + morphedEntity.getName() + " shot laser eyes at " + nearbyTarget.getName() + "!");
                             });
                         
                         if (livingMob.getNearbyEntities(5, 5, 5).stream()
@@ -275,7 +288,6 @@ public class MobMorphManager implements Listener {
                 if (target instanceof LivingEntity) {
                     LivingEntity targetEntity = (LivingEntity) target;
                     targetEntity.damage(2.0, (LivingEntity) morphedEntity);
-                    player.sendMessage(ChatColor.RED + "You attacked " + targetEntity.getName() + "!");
                 }
             }
         }
@@ -553,5 +565,63 @@ public class MobMorphManager implements Listener {
             }
         };
         hitTask.runTaskTimer(plugin, 0, 1);
+    }
+
+    private static void startMorphTimer(Player player, LivingEntity morphedEntity) {
+        UUID playerId = player.getUniqueId();
+        
+        // Store start time
+        morphStartTime.put(playerId, System.currentTimeMillis());
+        
+        // Cancel existing timer if any
+        stopMorphTimer(player);
+        
+        // Create timer task
+        BukkitRunnable timerTask = new BukkitRunnable() {
+            @Override
+            public void run() {
+                if (!isMorphed(player)) {
+                    this.cancel();
+                    return;
+                }
+                
+                long currentTime = System.currentTimeMillis();
+                Long startTime = morphStartTime.get(playerId);
+                
+                if (startTime != null && currentTime - startTime >= MORPH_DURATION) {
+                    // Time's up! Explode the mob and exit morph
+                    explodeMorphedEntity(player, morphedEntity);
+                    exitMorph(player);
+                    this.cancel();
+                }
+            }
+        };
+        
+        // Run timer every second
+        timerTask.runTaskTimer(plugin, 20, 20);
+        morphTimerTasks.put(playerId, timerTask);
+        
+        player.sendMessage(ChatColor.YELLOW + "Morph timer started! You have 1:30 before the mob explodes!");
+    }
+    
+    private static void stopMorphTimer(Player player) {
+        UUID playerId = player.getUniqueId();
+        BukkitRunnable timerTask = morphTimerTasks.get(playerId);
+        if (timerTask != null) {
+            timerTask.cancel();
+            morphTimerTasks.remove(playerId);
+        }
+    }
+    
+    private static void explodeMorphedEntity(Player player, Entity morphedEntity) {
+        if (morphedEntity != null && !morphedEntity.isDead()) {
+            // Create a much bigger explosion at mob location for dramatic exit effect
+            morphedEntity.getWorld().createExplosion(morphedEntity.getLocation(), 8.0f, false, true);
+            
+            // Remove the mob
+            morphedEntity.remove();
+            
+            player.sendMessage(ChatColor.RED + "Time's up! Your morphed entity has exploded!");
+        }
     }
 } 
