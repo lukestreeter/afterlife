@@ -24,6 +24,7 @@ import org.bukkit.plugin.Plugin;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
+import org.bukkit.event.entity.EntityDamageEvent;
 
 import java.util.HashMap;
 import java.util.UUID;
@@ -36,6 +37,7 @@ public class MobMorphManager implements Listener {
     private static final HashMap<UUID, GameMode> originalGameModes = new HashMap<>();
     private static final HashMap<UUID, ItemStack[]> originalInventories = new HashMap<>();
     private static final HashMap<UUID, BukkitRunnable> movementTasks = new HashMap<>();
+    private static final HashMap<UUID, Long> lastMovementTime = new HashMap<>();
     
     private static final String EXIT_MORPH_NAME = ChatColor.RED + "Exit Morph";
     private static final String EXIT_MORPH_LORE = ChatColor.YELLOW + "Left Click to exit morph mode!";
@@ -58,21 +60,24 @@ public class MobMorphManager implements Listener {
         // Store the original mob (don't create a copy)
         morphedPlayers.put(playerId, target);
         
-        // Disable AI for player control
+        // Make mob invulnerable but keep AI for movement
         if (target instanceof Mob) {
             Mob mob = (Mob) target;
-            mob.setAI(false);
             mob.setInvulnerable(true);
+            // Don't disable AI - we need it for movement!
         }
         
         // Hide the original player and put them in adventure mode for WASD control
         player.addPotionEffect(new PotionEffect(PotionEffectType.INVISIBILITY, Integer.MAX_VALUE, 0, true, false));
+        player.removePotionEffect(PotionEffectType.GLOWING); // Remove glowing effect when morphed
         player.setGameMode(GameMode.ADVENTURE);
         player.setAllowFlight(true);
         player.setFlying(true);
         
-        // Teleport player to mob location for control
-        player.teleport(target.getLocation());
+        // Position player at a distance from the mob for the following system
+        Location mobLocation = target.getLocation().clone();
+        Location playerLocation = mobLocation.clone().add(2, 1, 0); // 2 blocks away, 1 block up
+        player.teleport(playerLocation);
         
         // Start movement task
         startMovementTask(player, target);
@@ -85,7 +90,7 @@ public class MobMorphManager implements Listener {
         
         player.sendMessage(ChatColor.GREEN + "You have morphed into " + 
                           ChatColor.YELLOW + target.getName() + 
-                          ChatColor.GREEN + "! Use WASD to move.");
+                          ChatColor.GREEN + "! The mob will follow you as you move.");
     }
     
     public static void exitMorph(Player player) {
@@ -98,16 +103,16 @@ public class MobMorphManager implements Listener {
         // Stop movement task
         stopMovementTask(player);
         
-        // Restore the original mob's AI
+        // Restore the original mob's vulnerability
         Entity morphedEntity = morphedPlayers.get(playerId);
         if (morphedEntity instanceof Mob) {
             Mob mob = (Mob) morphedEntity;
-            mob.setAI(true);
             mob.setInvulnerable(false);
         }
         
         // Restore player
         player.removePotionEffect(PotionEffectType.INVISIBILITY);
+        player.addPotionEffect(new PotionEffect(PotionEffectType.GLOWING, Integer.MAX_VALUE, 0, false, false)); // Restore glowing effect
         player.setGameMode(originalGameModes.get(playerId));
         player.setAllowFlight(false);
         player.setFlying(false);
@@ -126,6 +131,7 @@ public class MobMorphManager implements Listener {
         originalGameModes.remove(playerId);
         originalInventories.remove(playerId);
         movementTasks.remove(playerId);
+        lastMovementTime.remove(playerId);
         
         player.sendMessage(ChatColor.AQUA + "You have exited morph mode!");
     }
@@ -144,7 +150,6 @@ public class MobMorphManager implements Listener {
         
         // Exit morph when player sneaks (holds shift)
         if (isMorphed(player) && event.isSneaking()) {
-            player.sendMessage(ChatColor.YELLOW + "[DEBUG] Shift detected, exiting morph...");
             exitMorph(player);
         }
     }
@@ -206,8 +211,6 @@ public class MobMorphManager implements Listener {
             if (item != null && item.getType().name().contains("HEAD")) {
                 return;
             }
-            
-            player.sendMessage(ChatColor.YELLOW + "[DEBUG] Left-click detected, attempting attack...");
             
             Entity morphedEntity = getMorphedEntity(player);
             if (morphedEntity instanceof LivingEntity) {
@@ -289,22 +292,54 @@ public class MobMorphManager implements Listener {
         Location to = event.getTo();
         
         if (to != null && !from.equals(to)) {
-            // Calculate the movement vector
-            Vector movement = to.toVector().subtract(from.toVector());
+            // Calculate distance between player and mob
+            Location mobLocation = morphedEntity.getLocation();
+            double distance = to.distance(mobLocation);
             
-            // Apply velocity to the mob for natural movement
-            morphedEntity.setVelocity(movement.multiply(0.5)); // Adjust speed multiplier
-            
-            // Update mob rotation to match player
-            morphedEntity.setRotation(to.getYaw(), to.getPitch());
-            
-            // Debug message
-            player.sendMessage(ChatColor.GRAY + "[DEBUG] WASD movement detected: " + 
-                             ChatColor.YELLOW + "X=" + movement.getX() + 
-                             ChatColor.GRAY + " Z=" + movement.getZ() + 
-                             ChatColor.GRAY + " Using velocity");
+            // If mob is too far away, make it follow the player with dynamic speed
+            if (distance > 3.0) {
+                // Calculate direction from mob to player
+                Vector direction = to.toVector().subtract(mobLocation.toVector()).normalize();
+                
+                // Dynamic speed based on distance - the further away, the faster it moves
+                double speedMultiplier = Math.min(1.2, 0.4 + (distance - 3.0) * 0.2); // Scales from 0.4 to 1.2
+                
+                // Apply velocity to make mob follow player
+                Vector velocity = direction.multiply(speedMultiplier);
+                morphedEntity.setVelocity(velocity);
+                
+                // Update mob rotation to face the player
+                morphedEntity.setRotation(to.getYaw(), to.getPitch());
+            }
+            // If mob is too close, make it back away slightly
+            else if (distance < 1.5) {
+                // Calculate direction away from player
+                Vector direction = mobLocation.toVector().subtract(to.toVector()).normalize();
+                
+                // Apply small velocity to back away
+                Vector velocity = direction.multiply(0.3);
+                morphedEntity.setVelocity(velocity);
+            }
+            // If mob is at good distance, just update rotation to face player
+            else {
+                // Just update rotation to face the player
+                morphedEntity.setRotation(to.getYaw(), to.getPitch());
+            }
         }
     }
+    
+    @EventHandler
+    public void onEntityDamage(EntityDamageEvent event) {
+        // Protect morphed entities from taking damage
+        Entity damagedEntity = event.getEntity();
+        for (Entity morphedEntity : morphedPlayers.values()) {
+            if (morphedEntity.equals(damagedEntity)) {
+                event.setCancelled(true);
+                return;
+            }
+        }
+    }
+
     
     private static void giveExitMorphItem(Player player) {
         ItemStack head = new ItemStack(org.bukkit.Material.PLAYER_HEAD, 1);
@@ -320,14 +355,14 @@ public class MobMorphManager implements Listener {
         Entity morphedEntity = getMorphedEntity(player);
         if (morphedEntity != null) {
             player.sendMessage(ChatColor.GOLD + "=== Morph Controls ===");
-            player.sendMessage(ChatColor.YELLOW + "WASD: " + ChatColor.WHITE + "Move the mob");
+            player.sendMessage(ChatColor.YELLOW + "WASD: " + ChatColor.WHITE + "Move around (mob will follow)");
             player.sendMessage(ChatColor.YELLOW + "Mouse: " + ChatColor.WHITE + "Look around");
             player.sendMessage(ChatColor.YELLOW + "Left Click: " + ChatColor.WHITE + "Attack nearby entities");
             player.sendMessage(ChatColor.YELLOW + "Right Click: " + ChatColor.WHITE + "Interact with entities");
             player.sendMessage(ChatColor.YELLOW + "Shift: " + ChatColor.WHITE + "Exit morph (hold shift)");
             player.sendMessage(ChatColor.YELLOW + "Exit Head: " + ChatColor.WHITE + "Alternative exit");
             player.sendMessage(ChatColor.GREEN + "You are now: " + ChatColor.AQUA + morphedEntity.getName());
-            player.sendMessage(ChatColor.GRAY + "Tip: Use WASD to move the mob around!");
+            player.sendMessage(ChatColor.GRAY + "Tip: The mob will follow you as you move around!");
         }
     }
 
@@ -339,7 +374,6 @@ public class MobMorphManager implements Listener {
         
         // For WASD movement, we don't need a continuous task
         // The PlayerMoveEvent will handle movement
-        player.sendMessage(ChatColor.GREEN + "[DEBUG] WASD movement system ready! Use WASD to move the mob.");
     }
     
     private static void stopMovementTask(Player player) {

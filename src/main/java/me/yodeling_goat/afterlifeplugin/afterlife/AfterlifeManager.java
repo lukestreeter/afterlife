@@ -8,6 +8,8 @@ import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 import me.yodeling_goat.afterlifeplugin.afterlife.events.PlayerEnterAfterlifeEvent;
 import org.bukkit.Location;
+import org.bukkit.GameMode;
+import org.bukkit.ChatColor;
 
 public class AfterlifeManager {
     private static final Set<Player> afterlifePlayers = new HashSet<>();
@@ -19,6 +21,22 @@ public class AfterlifeManager {
 
     public static void removeFromAfterlife(Player player) {
         afterlifePlayers.remove(player);
+        
+        // Remove all afterlife effects
+        player.setAllowFlight(false);
+        player.setFlying(false);
+        
+        // Remove potion effects
+        player.removePotionEffect(PotionEffectType.GLOWING);
+        player.removePotionEffect(PotionEffectType.NIGHT_VISION);
+        player.removePotionEffect(PotionEffectType.CONFUSION);
+        player.removePotionEffect(PotionEffectType.BLINDNESS);
+        
+        // Reset to survival mode
+        player.setGameMode(GameMode.SURVIVAL);
+        
+        // Send message
+        player.sendMessage(ChatColor.GREEN + "You have been released from the afterlife!");
     }
 
     public static boolean isInAfterlife(Player player) {
