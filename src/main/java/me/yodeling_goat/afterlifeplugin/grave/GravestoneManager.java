@@ -1,12 +1,11 @@
-package me.yodeling_goat.afterlifeplugin;
+package me.yodeling_goat.afterlifeplugin.grave;
 
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.block.Block;
+import org.bukkit.block.Chest;
 import org.bukkit.entity.Player;
-import org.bukkit.event.EventHandler;
-import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.inventory.ItemStack;
 
 import java.util.HashMap;
@@ -15,7 +14,9 @@ import java.util.UUID;
 import java.util.Random;
 import org.bukkit.block.BlockFace;
 import java.util.ArrayList;
-import java.util.Collections;
+import org.bukkit.Bukkit;
+import me.yodeling_goat.afterlifeplugin.afterlife.handlers.InventoryHandler;
+import java.util.Optional;
 
 public class GravestoneManager {
     
@@ -46,11 +47,8 @@ public class GravestoneManager {
         public ItemStack[] getInventory() { return inventory; }
         public java.util.List<Location> getCasketArea() { return casketArea; }
     }
-
+    
     public static void createGravestone(Player player, String deathCause) {
-        if (player.getLastDamageCause() != null) {
-            deathCause = player.getLastDamageCause().getCause().toString();
-        }
         Location deathLocation = player.getLocation();
         World world = deathLocation.getWorld();
         Location groundLocation = findGroundLocation(deathLocation);
@@ -73,6 +71,9 @@ public class GravestoneManager {
 
         // 5. Add epitaphs relative to the casket head
         addEpitaphs(player, casketHead, deathCause);
+
+        // 6. Add last belongings
+        addPeret(player, casketHead);
 
         // Store gravestone data
         gravestones.put(player.getUniqueId(), new GravestoneData(groundLocation, player.getName(), deathCause, inventory, casketArea));
@@ -156,6 +157,40 @@ public class GravestoneManager {
         sign.setLine(2, "§7Rest in Peace");
         sign.setLine(3, "§7†");
         sign.update();
+    }
+
+    /**
+     * Provisions for the afterlife and other burial goods
+     * @param player
+     * @param location
+     */
+    public static void addPeret(Player player, Location location) {
+        Block block = location.getBlock().getRelative(0, -1, 0);
+        block.setType(Material.CHEST);
+        Chest chest = (Chest) block.getState();
+        org.bukkit.inventory.Inventory chestInventory = chest.getInventory();
+        
+        // Get saved inventory from InventoryHandler
+        ItemStack[] playerItems = InventoryHandler.getInstance().getInventory(player);
+        addItemsToChest(Optional.ofNullable(playerItems), "inventory", chestInventory);
+        
+        // Get saved armor from InventoryHandler
+        ItemStack[] armorItems = InventoryHandler.getInstance().getArmor(player);
+        addItemsToChest(Optional.ofNullable(armorItems), "armor", chestInventory);
+    }
+
+    private static void addItemsToChest(Optional<ItemStack[]> items, String itemType, org.bukkit.inventory.Inventory chestInventory) {
+        items.ifPresent(itemArray -> {
+            for (ItemStack item : itemArray) {
+                if (item != null) {
+                    String itemName = item.hasItemMeta() && item.getItemMeta().hasDisplayName() 
+                        ? item.getItemMeta().getDisplayName() 
+                        : item.getType().toString();
+                    Bukkit.getLogger().info("Adding " + itemType + " to chest: " + itemName + " x" + item.getAmount());
+                    chestInventory.addItem(item);
+                }
+            }
+        });
     }
 
     private static void placeWallSignOnWall(Location wallLocation, BlockFace signFacing, String[] signText) {
