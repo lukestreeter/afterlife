@@ -25,6 +25,7 @@ import me.yodeling_goat.afterlifeplugin.grave.GraveManager;
 import me.yodeling_goat.afterlifeplugin.impersonation.ImpersonationManager;
 import me.yodeling_goat.afterlifeplugin.impersonation.listeners.ImpersonationListener;
 import me.yodeling_goat.afterlifeplugin.impersonation.listeners.EntitySpawnListener;
+import me.yodeling_goat.afterlifeplugin.impersonation.listeners.AnimalFollowListener;
 import me.yodeling_goat.afterlifeplugin.impersonation.commands.ImpersonationCommand;
 import me.yodeling_goat.afterlifeplugin.impersonation.tasks.ImpersonationUpdateTask;
 
@@ -52,14 +53,18 @@ public class AfterLifePlugin extends JavaPlugin implements Listener {
         // Register impersonation listeners
         Bukkit.getPluginManager().registerEvents(new ImpersonationListener(), this);
         Bukkit.getPluginManager().registerEvents(new EntitySpawnListener(), this);
+        Bukkit.getPluginManager().registerEvents(new AnimalFollowListener(), this);
+        
+        // Start the animal stick around task
+        AnimalFollowListener.startStickAroundTask(this);
         
         // Start the periodic time update task
         getLogger().info("Starting AfterlifeTimeListener periodic updates...");
         AfterlifeTimeListener.startPeriodicUpdate(this);
         
-        // Start the periodic impersonation update task
-        getLogger().info("Starting ImpersonationUpdateTask periodic updates...");
-        ImpersonationUpdateTask.startPeriodicUpdate(this);
+        // Start the periodic impersonation update task (disabled - using new follow system)
+        // getLogger().info("Starting ImpersonationUpdateTask periodic updates...");
+        // ImpersonationUpdateTask.startPeriodicUpdate(this);
         
 
         

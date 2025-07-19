@@ -118,11 +118,18 @@ public class ImpersonationManager {
     }
 
     private static void applyImpersonationEffects(Player player, Entity target) {
-        // Make the player invisible
+        // Make the player completely invisible
         player.addPotionEffect(new PotionEffect(PotionEffectType.INVISIBILITY, Integer.MAX_VALUE, 0, false, false));
         
         // Add night vision so they can see clearly
         player.addPotionEffect(new PotionEffect(PotionEffectType.NIGHT_VISION, Integer.MAX_VALUE, 0, false, false));
+        
+        // Hide player from all other players completely
+        for (org.bukkit.entity.Player otherPlayer : org.bukkit.Bukkit.getOnlinePlayers()) {
+            if (!otherPlayer.equals(player)) {
+                otherPlayer.hidePlayer(org.bukkit.Bukkit.getPluginManager().getPlugin("AfterLifePlugin"), player);
+            }
+        }
         
         // Execute the summon command directly to create the animal disguise
         String command = buildAnimalSummonCommand(target.getType(), player.getName(), player.getLocation());
@@ -133,44 +140,38 @@ public class ImpersonationManager {
         player.setMetadata("animal_disguise", new org.bukkit.metadata.FixedMetadataValue(
             org.bukkit.Bukkit.getPluginManager().getPlugin("AfterLifePlugin"), player.getName()));
         
-        // Add the player to a special team for visual effects
-        org.bukkit.scoreboard.Scoreboard scoreboard = Bukkit.getScoreboardManager().getMainScoreboard();
-        org.bukkit.scoreboard.Team impersonatingTeam = scoreboard.getTeam("impersonating");
-        if (impersonatingTeam == null) {
-            impersonatingTeam = scoreboard.registerNewTeam("impersonating");
-            impersonatingTeam.setColor(org.bukkit.ChatColor.GOLD);
-        }
-        impersonatingTeam.addPlayer(player);
+        // Give the player the appropriate food item to make the animal follow
+        giveAnimalFood(player, target.getType());
     }
     
     private static String buildAnimalSummonCommand(org.bukkit.entity.EntityType entityType, String playerName, org.bukkit.Location location) {
         // Create a summon command with specific properties for the animal disguise
         String baseCommand = "summon " + entityType.name().toLowerCase() + " " + location.getX() + " " + location.getY() + " " + location.getZ();
         
-        // Add custom properties based on entity type
+        // Add custom properties based on entity type - enable AI for natural movement
         switch (entityType) {
             case CHICKEN:
-                return baseCommand + " {CustomName:\"\\u00a76Chicken Disguise\",CustomNameVisible:1b,Invulnerable:1b,NoAI:1b,Silent:1b,Glowing:1b,Tags:[\"animal_disguise\",\"" + playerName + "\"]}";
+                return baseCommand + " {Invulnerable:1b,Silent:1b,Tags:[\"animal_disguise\",\"" + playerName + "\"]}";
             case COW:
-                return baseCommand + " {CustomName:\"\\u00a76Cow Disguise\",CustomNameVisible:1b,Invulnerable:1b,NoAI:1b,Silent:1b,Glowing:1b,Tags:[\"animal_disguise\",\"" + playerName + "\"]}";
+                return baseCommand + " {Invulnerable:1b,Silent:1b,Tags:[\"animal_disguise\",\"" + playerName + "\"]}";
             case PIG:
-                return baseCommand + " {CustomName:\"\\u00a76Pig Disguise\",CustomNameVisible:1b,Invulnerable:1b,NoAI:1b,Silent:1b,Glowing:1b,Tags:[\"animal_disguise\",\"" + playerName + "\"]}";
+                return baseCommand + " {Invulnerable:1b,Silent:1b,Tags:[\"animal_disguise\",\"" + playerName + "\"]}";
             case SHEEP:
-                return baseCommand + " {CustomName:\"\\u00a76Sheep Disguise\",CustomNameVisible:1b,Invulnerable:1b,NoAI:1b,Silent:1b,Glowing:1b,Tags:[\"animal_disguise\",\"" + playerName + "\"]}";
+                return baseCommand + " {Invulnerable:1b,Silent:1b,Tags:[\"animal_disguise\",\"" + playerName + "\"]}";
             case HORSE:
-                return baseCommand + " {CustomName:\"\\u00a76Horse Disguise\",CustomNameVisible:1b,Invulnerable:1b,NoAI:1b,Silent:1b,Glowing:1b,Tags:[\"animal_disguise\",\"" + playerName + "\"]}";
+                return baseCommand + " {Invulnerable:1b,Silent:1b,Tags:[\"animal_disguise\",\"" + playerName + "\"]}";
             case RABBIT:
-                return baseCommand + " {CustomName:\"\\u00a76Rabbit Disguise\",CustomNameVisible:1b,Invulnerable:1b,NoAI:1b,Silent:1b,Glowing:1b,Tags:[\"animal_disguise\",\"" + playerName + "\"]}";
+                return baseCommand + " {Invulnerable:1b,Silent:1b,Tags:[\"animal_disguise\",\"" + playerName + "\"]}";
             case FOX:
-                return baseCommand + " {CustomName:\"\\u00a76Fox Disguise\",CustomNameVisible:1b,Invulnerable:1b,NoAI:1b,Silent:1b,Glowing:1b,Tags:[\"animal_disguise\",\"" + playerName + "\"]}";
+                return baseCommand + " {Invulnerable:1b,Silent:1b,Tags:[\"animal_disguise\",\"" + playerName + "\"]}";
             case WOLF:
-                return baseCommand + " {CustomName:\"\\u00a76Wolf Disguise\",CustomNameVisible:1b,Invulnerable:1b,NoAI:1b,Silent:1b,Glowing:1b,Tags:[\"animal_disguise\",\"" + playerName + "\"]}";
+                return baseCommand + " {Invulnerable:1b,Silent:1b,Tags:[\"animal_disguise\",\"" + playerName + "\"]}";
             case CAT:
-                return baseCommand + " {CustomName:\"\\u00a76Cat Disguise\",CustomNameVisible:1b,Invulnerable:1b,NoAI:1b,Silent:1b,Glowing:1b,Tags:[\"animal_disguise\",\"" + playerName + "\"]}";
+                return baseCommand + " {Invulnerable:1b,Silent:1b,Tags:[\"animal_disguise\",\"" + playerName + "\"]}";
             case PARROT:
-                return baseCommand + " {CustomName:\"\\u00a76Parrot Disguise\",CustomNameVisible:1b,Invulnerable:1b,NoAI:1b,Silent:1b,Glowing:1b,Tags:[\"animal_disguise\",\"" + playerName + "\"]}";
+                return baseCommand + " {Invulnerable:1b,Silent:1b,Tags:[\"animal_disguise\",\"" + playerName + "\"]}";
             default:
-                return baseCommand + " {CustomName:\"\\u00a76" + entityType.name().toLowerCase() + " Disguise\",CustomNameVisible:1b,Invulnerable:1b,NoAI:1b,Silent:1b,Glowing:1b,Tags:[\"animal_disguise\",\"" + playerName + "\"]}";
+                return baseCommand + " {Invulnerable:1b,Silent:1b,Tags:[\"animal_disguise\",\"" + playerName + "\"]}";
         }
     }
 
@@ -178,6 +179,13 @@ public class ImpersonationManager {
         // Remove invisibility and other potion effects
         player.removePotionEffect(PotionEffectType.INVISIBILITY);
         player.removePotionEffect(PotionEffectType.NIGHT_VISION);
+        
+        // Show player to all other players again
+        for (org.bukkit.entity.Player otherPlayer : org.bukkit.Bukkit.getOnlinePlayers()) {
+            if (!otherPlayer.equals(player)) {
+                otherPlayer.showPlayer(org.bukkit.Bukkit.getPluginManager().getPlugin("AfterLifePlugin"), player);
+            }
+        }
         
         // Remove the spawned animal entity
         if (player.hasMetadata("animal_disguise")) {
@@ -192,11 +200,11 @@ public class ImpersonationManager {
             player.removeMetadata("animal_disguise", org.bukkit.Bukkit.getPluginManager().getPlugin("AfterLifePlugin"));
         }
         
-        // Remove from team
-        org.bukkit.scoreboard.Scoreboard scoreboard = Bukkit.getScoreboardManager().getMainScoreboard();
-        org.bukkit.scoreboard.Team impersonatingTeam = scoreboard.getTeam("impersonating");
-        if (impersonatingTeam != null) {
-            impersonatingTeam.removePlayer(player);
+        // Remove the animal lure food item
+        org.bukkit.inventory.ItemStack mainHand = player.getInventory().getItemInMainHand();
+        if (mainHand.hasItemMeta() && mainHand.getItemMeta().hasDisplayName() && 
+            mainHand.getItemMeta().getDisplayName().equals("§6Animal Lure")) {
+            player.getInventory().setItemInMainHand(null);
         }
     }
 
@@ -218,11 +226,11 @@ public class ImpersonationManager {
                 player.removeMetadata("animal_disguise", org.bukkit.Bukkit.getPluginManager().getPlugin("AfterLifePlugin"));
             }
             
-            // Remove from team
-            org.bukkit.scoreboard.Scoreboard scoreboard = Bukkit.getScoreboardManager().getMainScoreboard();
-            org.bukkit.scoreboard.Team impersonatingTeam = scoreboard.getTeam("impersonating");
-            if (impersonatingTeam != null) {
-                impersonatingTeam.removePlayer(player);
+            // Remove the animal lure food item
+            org.bukkit.inventory.ItemStack mainHand = player.getInventory().getItemInMainHand();
+            if (mainHand.hasItemMeta() && mainHand.getItemMeta().hasDisplayName() && 
+                mainHand.getItemMeta().getDisplayName().equals("§6Animal Lure")) {
+                player.getInventory().setItemInMainHand(null);
             }
             
             // Clean up data
@@ -240,6 +248,64 @@ public class ImpersonationManager {
             impersonatingPlayers.remove(player.getUniqueId());
             
             player.sendMessage("§cYou have died and lost your animal disguise!");
+        }
+    }
+    
+    private static void giveAnimalFood(Player player, org.bukkit.entity.EntityType entityType) {
+        org.bukkit.Material foodItem = null;
+        
+        // Determine the appropriate food item for each animal type
+        switch (entityType) {
+            case PIG:
+                foodItem = org.bukkit.Material.CARROT;
+                break;
+            case COW:
+            case SHEEP:
+                foodItem = org.bukkit.Material.WHEAT;
+                break;
+            case CHICKEN:
+                foodItem = org.bukkit.Material.WHEAT_SEEDS;
+                break;
+            case RABBIT:
+                foodItem = org.bukkit.Material.CARROT;
+                break;
+            case HORSE:
+            case DONKEY:
+            case MULE:
+                foodItem = org.bukkit.Material.GOLDEN_APPLE;
+                break;
+            case WOLF:
+                foodItem = org.bukkit.Material.BONE;
+                break;
+            case CAT:
+                foodItem = org.bukkit.Material.COD;
+                break;
+            case FOX:
+                foodItem = org.bukkit.Material.SWEET_BERRIES;
+                break;
+            case PARROT:
+                foodItem = org.bukkit.Material.COOKIE;
+                break;
+            default:
+                foodItem = org.bukkit.Material.WHEAT; // Default food
+                break;
+        }
+        
+        if (foodItem != null) {
+            // Create a custom food item with a unique identifier for this specific animal
+            org.bukkit.inventory.ItemStack food = new org.bukkit.inventory.ItemStack(foodItem);
+            org.bukkit.inventory.meta.ItemMeta meta = food.getItemMeta();
+            meta.setDisplayName("§6Animal Lure");
+            meta.setLore(java.util.Arrays.asList("§7Makes your animal follow you", "§7Only you can see this", "§7ID: " + player.getName()));
+            
+            // Add custom data to make this food unique to this player
+            meta.setLocalizedName("animal_lure_" + player.getName());
+            food.setItemMeta(meta);
+            
+            // Give the food to the player's main hand
+            player.getInventory().setItemInMainHand(food);
+            
+            Bukkit.getLogger().info("[ImpersonationManager] Gave " + foodItem.name() + " to " + player.getName() + " for " + entityType.name());
         }
     }
 } 
