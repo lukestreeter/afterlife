@@ -25,6 +25,12 @@ import me.yodeling_goat.afterlifeplugin.grave.listeners.PlayerEnteredAfterlifeLi
 
 public class AfterLifePlugin extends JavaPlugin implements Listener {
     
+    private static KarmaGoalManager karmaGoalManager;
+    
+    public static KarmaGoalManager getKarmaGoalManager() {
+        return karmaGoalManager;
+    }
+    
     @Override
     public void onEnable() {
         getLogger().info("AfterLifePlugin is starting up...");
@@ -34,7 +40,7 @@ public class AfterLifePlugin extends JavaPlugin implements Listener {
         
         // Register managers that implement Listener
         KarmaManager karmaManager = new KarmaManager();
-        KarmaGoalManager karmaGoalManager = new KarmaGoalManager(this);
+        karmaGoalManager = new KarmaGoalManager(this);
         
         // Register managers as listeners
         Bukkit.getPluginManager().registerEvents(karmaManager, this);

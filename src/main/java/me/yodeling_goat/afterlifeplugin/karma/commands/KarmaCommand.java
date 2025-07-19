@@ -17,6 +17,8 @@ public class KarmaCommand implements CommandExecutor {
             return false;
         }
 
+
+
         if (args.length < 2) {
             sender.sendMessage("§cUsage: /karma <player> <amount> [reason]");
             return true;

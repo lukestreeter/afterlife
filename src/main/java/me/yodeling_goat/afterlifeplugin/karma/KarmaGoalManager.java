@@ -115,7 +115,55 @@ public class KarmaGoalManager implements Listener {
         achievedGoals.remove(player);
     }
 
-    private static class KarmaGoal {
+    /**
+     * Get the next blessing goal for a player based on their current karma
+     * @param player The player to check
+     * @return The next KarmaGoal, or null if no more goals available
+     */
+    public KarmaGoal getNextBlessingGoal(Player player) {
+        int currentKarma = KarmaManager.getKarma(player);
+        KarmaGoal nextGoal = null;
+        
+        for (KarmaGoal goal : karmaGoals.values()) {
+            if (goal.getThreshold() > currentKarma) {
+                if (nextGoal == null || goal.getThreshold() < nextGoal.getThreshold()) {
+                    nextGoal = goal;
+                }
+            }
+        }
+        
+        return nextGoal;
+    }
+
+    /**
+     * Get the current blessing goal that the player has achieved
+     * @param player The player to check
+     * @return The current KarmaGoal, or null if no goal achieved
+     */
+    public KarmaGoal getCurrentBlessingGoal(Player player) {
+        int currentKarma = KarmaManager.getKarma(player);
+        KarmaGoal currentGoal = null;
+        
+        for (KarmaGoal goal : karmaGoals.values()) {
+            if (goal.getThreshold() <= currentKarma) {
+                if (currentGoal == null || goal.getThreshold() > currentGoal.getThreshold()) {
+                    currentGoal = goal;
+                }
+            }
+        }
+        
+        return currentGoal;
+    }
+
+    /**
+     * Get all karma goals sorted by threshold
+     * @return Map of karma goals sorted by threshold
+     */
+    public Map<String, KarmaGoal> getKarmaGoals() {
+        return new HashMap<>(karmaGoals);
+    }
+
+    public static class KarmaGoal {
         private final String name;
         private final int threshold;
         private final String rewardType;

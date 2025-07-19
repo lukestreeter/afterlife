@@ -12,6 +12,8 @@ import org.bukkit.boss.BarStyle;
 import java.util.HashMap;
 import me.yodeling_goat.afterlifeplugin.karma.events.KarmaChangeEvent;
 import me.yodeling_goat.afterlifeplugin.karma.events.KarmaChangeRequestEvent;
+import me.yodeling_goat.afterlifeplugin.karma.events.KarmaGoalAchievedEvent;
+import me.yodeling_goat.afterlifeplugin.AfterLifePlugin;
 
 public class KarmaManager implements Listener {
     private static final HashMap<String, Integer> playerKarma = new HashMap<>();
@@ -56,6 +58,12 @@ public class KarmaManager implements Listener {
         updatePlayerHandicaps(event.getPlayer(), event.getNewKarma());
         updateKarmaDisplay(event.getPlayer(), event.getNewKarma());
         // Add more handlers here as needed
+    }
+
+    @EventHandler
+    public void onKarmaGoalAchieved(KarmaGoalAchievedEvent event) {
+        // Update the boss bar when a goal is achieved to show progress to next goal
+        updateKarmaDisplay(event.getPlayer(), getKarma(event.getPlayer()));
     }
 
     // --- Effect Handlers ---
@@ -135,7 +143,45 @@ public class KarmaManager implements Listener {
         } else {
             color = BarColor.WHITE;
         }
-        String title = "Karma: " + karma + "/100";
+        
+        // Get next blessing goal information
+        KarmaGoalManager karmaGoalManager = AfterLifePlugin.getKarmaGoalManager();
+        KarmaGoalManager.KarmaGoal nextGoal = karmaGoalManager != null ? karmaGoalManager.getNextBlessingGoal(player) : null;
+        
+        String title;
+        double progress;
+        
+        if (nextGoal != null) {
+            // Show progress towards next blessing
+            int currentKarma = karma;
+            int nextThreshold = nextGoal.getThreshold();
+            int karmaNeeded = nextThreshold - currentKarma;
+            
+            // Get the current goal to calculate progress from
+            KarmaGoalManager.KarmaGoal currentGoal = karmaGoalManager.getCurrentBlessingGoal(player);
+            int startKarma = currentGoal != null ? currentGoal.getThreshold() : 0;
+            int totalKarmaNeeded = nextThreshold - startKarma;
+            int karmaProgress = currentKarma - startKarma;
+            
+            progress = Math.max(0.01, Math.min(1.0, (double) karmaProgress / totalKarmaNeeded));
+            
+            // Build title with next blessing information
+            boolean showNextBlessing = AfterLifePlugin.getPlugin(AfterLifePlugin.class).getConfig()
+                .getBoolean("boss-bar.show-next-blessing", true);
+            
+            if (showNextBlessing) {
+                title = "§6Karma: " + karma + " §7→ §a" + nextGoal.getName() + " §7(" + karmaNeeded + " more)";
+            } else {
+                String hiddenText = AfterLifePlugin.getPlugin(AfterLifePlugin.class).getConfig()
+                    .getString("boss-bar.hidden-blessing-text", "§6§l??? §r§7(Mystery Blessing)");
+                title = "§6Karma: " + karma + " §7→ " + hiddenText;
+            }
+        } else {
+            // Player has reached max karma or no goals configured
+            title = "§6Karma: " + karma + "/100 §a(Max Level!)";
+            progress = 1.0;
+        }
+        
         BossBar bar = playerBossBars.get(player);
         if (bar == null) {
             bar = Bukkit.createBossBar(title, color, BarStyle.SOLID);
@@ -144,7 +190,7 @@ public class KarmaManager implements Listener {
             bar.setTitle(title);
             bar.setColor(color);
         }
-        bar.setProgress(Math.max(0.01, Math.min(1.0, karma / 100.0)));
+        bar.setProgress(progress);
         bar.addPlayer(player); // Ensure player is added to the bar
     }
 

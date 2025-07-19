@@ -1,5 +1,12 @@
 # AfterLife Plugin Configuration
 
+# Boss Bar Configuration
+boss-bar:
+  # Whether to show the next blessing target in the boss bar
+  show-next-blessing: true
+  # Text to display when next blessing is hidden (random, surprise, etc.)
+  hidden-blessing-text: "§6§l??? §r§7(Mystery Blessing)"
+
 # Karma Goals Configuration
 karma-goals:
   # Format: goal_name: {threshold: karma_value, reward: reward_type, reward_data: data}
