@@ -140,7 +140,7 @@ public class GravestoneManager {
         int y = casketHead.getBlockY();
         int z = casketHead.getBlockZ();
         // Place a wall sign on the north face of the gravestone
-        Block signBlock = world.getBlockAt(x, y + 1, z);
+        Block signBlock = world.getBlockAt(x, y + 2, z);
         signBlock.setType(Material.OAK_WALL_SIGN);
         org.bukkit.block.data.type.WallSign wallSignData = (org.bukkit.block.data.type.WallSign) signBlock.getBlockData();
         wallSignData.setFacing(org.bukkit.block.BlockFace.SOUTH); // Sign faces away from the viewer
