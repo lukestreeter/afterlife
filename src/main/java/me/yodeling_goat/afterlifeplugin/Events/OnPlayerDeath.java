@@ -1,5 +1,6 @@
 package me.yodeling_goat.afterlifeplugin.Events;
 
+import me.yodeling_goat.afterlifeplugin.GravestoneManager;
 import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.entity.Entity;
@@ -32,6 +33,11 @@ public class OnPlayerDeath implements Listener {
 		Player player = (Player) entity;
 		if (isFatal(event, player)) {
 			event.setCancelled(true);
+			
+			// Create gravestone before sending to afterlife
+			String deathCause = event.getCause().toString();
+			GravestoneManager.createGravestone(player, deathCause);
+			
 			player.addPotionEffect(new PotionEffect(PotionEffectType.CONFUSION, 300, 50));
 			player.addPotionEffect(new PotionEffect(PotionEffectType.BLINDNESS, 300, 50));
 			sendToAfterlife(player);
@@ -45,6 +51,13 @@ public class OnPlayerDeath implements Listener {
 		
 		// Only process if player is not already in afterlife
 		if (!afterlifePlayers.contains(player)) {
+			// Create gravestone before processing death
+			String deathCause = "Unknown";
+			if (player.getLastDamageCause() != null) {
+				deathCause = player.getLastDamageCause().getCause().toString();
+			}
+			GravestoneManager.createGravestone(player, deathCause);
+			
 			// Prevent drops and death message
 			event.getDrops().clear();
 			event.setKeepInventory(true);
