@@ -5,6 +5,8 @@ import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.block.Block;
 import org.bukkit.entity.Player;
+import org.bukkit.event.EventHandler;
+import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.inventory.ItemStack;
 
 import java.util.HashMap;
@@ -44,8 +46,11 @@ public class GravestoneManager {
         public ItemStack[] getInventory() { return inventory; }
         public java.util.List<Location> getCasketArea() { return casketArea; }
     }
-    
+
     public static void createGravestone(Player player, String deathCause) {
+        if (player.getLastDamageCause() != null) {
+            deathCause = player.getLastDamageCause().getCause().toString();
+        }
         Location deathLocation = player.getLocation();
         World world = deathLocation.getWorld();
         Location groundLocation = findGroundLocation(deathLocation);
