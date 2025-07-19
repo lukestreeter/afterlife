@@ -3,3 +3,14 @@ version: ${project.version}
 main: me.yodeling_goat.afterlifeplugin.AfterLifePlugin
 api-version: 1.13
 description: send your players to heaven or hell!
+
+commands:
+  karma:
+    description: Change a player's karma
+    usage: /karma <player> <amount> [reason]
+    permission: afterlife.karma.admin
+
+permissions:
+  afterlife.karma.admin:
+    description: Allows changing player karma
+    default: op

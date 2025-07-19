@@ -1,0 +1,34 @@
+# AfterLife Plugin Configuration
+
+# Karma Goals Configuration
+karma-goals:
+  # Format: goal_name: {threshold: karma_value, reward: reward_type, reward_data: data}
+  first-step:
+    threshold: 25
+    reward: "item"
+    reward_data: "DIAMOND_SWORD"
+    message: "§a§lKARMA GOAL ACHIEVED! §r§aYou've reached 25 karma and received a Diamond Sword!"
+  
+  good-citizen:
+    threshold: 50
+    reward: "item"
+    reward_data: "DIAMOND_CHESTPLATE"
+    message: "§a§lKARMA GOAL ACHIEVED! §r§aYou've reached 50 karma and received a Diamond Chestplate!"
+  
+  hero:
+    threshold: 75
+    reward: "item"
+    reward_data: "NETHERITE_SWORD"
+    message: "§a§lKARMA GOAL ACHIEVED! §r§aYou've reached 75 karma and received a Netherite Sword!"
+  
+  legend:
+    threshold: 100
+    reward: "item"
+    reward_data: "NETHERITE_CHESTPLATE"
+    message: "§a§lKARMA GOAL ACHIEVED! §r§aYou've reached 100 karma and received a Netherite Chestplate!"
+
+# Karma System Configuration
+karma:
+  default-value: 50
+  min-value: 1
+  max-value: 100 

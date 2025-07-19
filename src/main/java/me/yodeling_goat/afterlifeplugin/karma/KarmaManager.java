@@ -18,7 +18,7 @@ public class KarmaManager implements Listener {
     private static final HashMap<Player, BossBar> playerBossBars = new HashMap<>();
 
     public static int getKarma(Player player) {
-        return playerKarma.getOrDefault(player.getName(), 50); // Default 50
+        return playerKarma.getOrDefault(player.getName(), 24); // Default 24
     }
 
     public static void setKarma(Player player, int value) {

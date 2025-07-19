@@ -9,6 +9,9 @@ import org.bukkit.entity.Player;
 
 // Karma system
 import me.yodeling_goat.afterlifeplugin.karma.KarmaManager;
+import me.yodeling_goat.afterlifeplugin.karma.KarmaGoalManager;
+import me.yodeling_goat.afterlifeplugin.karma.commands.KarmaCommand;
+import me.yodeling_goat.afterlifeplugin.karma.listeners.KarmaActionListener;
 
 // Afterlife system
 import me.yodeling_goat.afterlifeplugin.afterlife.AfterlifeManager;
@@ -26,11 +29,22 @@ public class AfterLifePlugin extends JavaPlugin implements Listener {
     public void onEnable() {
         getLogger().info("AfterLifePlugin is starting up...");
         
+        // Save default config
+        saveDefaultConfig();
+        
         // Register managers that implement Listener
         KarmaManager karmaManager = new KarmaManager();
+        KarmaGoalManager karmaGoalManager = new KarmaGoalManager(this);
         
         // Register managers as listeners
         Bukkit.getPluginManager().registerEvents(karmaManager, this);
+        Bukkit.getPluginManager().registerEvents(karmaGoalManager, this);
+        
+        // Register karma listeners
+        Bukkit.getPluginManager().registerEvents(new KarmaActionListener(), this);
+        
+        // Register commands
+        getCommand("karma").setExecutor(new KarmaCommand());
         
         // Register afterlife listeners
         Bukkit.getPluginManager().registerEvents(new AfterlifeEffectsListener(), this);
@@ -52,6 +66,12 @@ public class AfterLifePlugin extends JavaPlugin implements Listener {
         Player player = event.getPlayer();
         KarmaManager.initializeKarmaDisplay(player);
         AfterlifeManager.initializeAfterlifeState(player);
+    }
+    
+    @EventHandler
+    public void onPlayerQuit(org.bukkit.event.player.PlayerQuitEvent event) {
+        Player player = event.getPlayer();
+        KarmaManager.removeKarmaDisplay(player);
     }
     
     @Override
