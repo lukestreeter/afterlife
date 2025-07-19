@@ -3,3 +3,11 @@ version: ${project.version}
 main: me.yodeling_goat.afterlifeplugin.AfterLifePlugin
 api-version: 1.13
 description: send your players to heaven or hell!
+
+commands:
+  impersonate:
+    description: Get help on how to impersonate animals
+    usage: /impersonate
+  unimpersonate:
+    description: Stop impersonating an animal and return to normal
+    usage: /unimpersonate

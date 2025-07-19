@@ -13,11 +13,13 @@ public class AfterlifeManager {
     private static final Set<Player> afterlifePlayers = new HashSet<>();
 
     public static void sendToAfterlife(Player player) {
+        Bukkit.getLogger().info("[AfterlifeManager] Player " + player.getName() + " is entering the afterlife");
         afterlifePlayers.add(player);
         Bukkit.getPluginManager().callEvent(new PlayerEnterAfterlifeEvent(player));
     }
 
     public static void removeFromAfterlife(Player player) {
+        Bukkit.getLogger().info("[AfterlifeManager] Player " + player.getName() + " is leaving the afterlife");
         afterlifePlayers.remove(player);
         removeAfterlifeEffects(player);
     }
@@ -41,19 +43,8 @@ public class AfterlifeManager {
         player.setAllowFlight(true);
         player.setFlying(true);
         
-        // Apply semi-transparent effect
-        // Make player invisible but keep their outline
-        player.addPotionEffect(new PotionEffect(PotionEffectType.INVISIBILITY, Integer.MAX_VALUE, 0, false, false));
-        player.addPotionEffect(new PotionEffect(PotionEffectType.GLOWING, Integer.MAX_VALUE, 1, false, false)); // Increased amplifier to 1 for stronger glow
-        
-        // Create a team with more vibrant color
-        org.bukkit.scoreboard.Scoreboard scoreboard = Bukkit.getScoreboardManager().getMainScoreboard();
-        org.bukkit.scoreboard.Team team = scoreboard.getTeam("translucent");
-        if (team == null) {
-            team = scoreboard.registerNewTeam("translucent");
-        }
-        team.setColor(org.bukkit.ChatColor.WHITE); // Changed to WHITE for stronger visibility
-        team.addPlayer(player);
+        // Apply semi-transparent effect based on day/night cycle
+        applyDayNightAfterlifeEffect(player);
         
         // Reapply permanent potion effects
         player.addPotionEffect(new PotionEffect(PotionEffectType.NIGHT_VISION, Integer.MAX_VALUE, 0, false, false));
@@ -97,5 +88,50 @@ public class AfterlifeManager {
         // Disable flight
         player.setAllowFlight(false);
         player.setFlying(false);
+    }
+    
+    public static void applyDayNightAfterlifeEffect(Player player) {
+        long time = player.getWorld().getTime();
+        boolean isNight = time >= 13000 || time <= 23000; // Night time is from 13000 to 23000 ticks
+        
+        // Log the time and day/night status
+        Bukkit.getLogger().info("[AfterlifeManager] Player " + player.getName() + " - World time: " + time + " ticks, Is night: " + isNight);
+        
+        // Always apply invisibility for semi-transparency
+        player.addPotionEffect(new PotionEffect(PotionEffectType.INVISIBILITY, Integer.MAX_VALUE, 0, false, false));
+        
+        // Create or get the translucent team
+        org.bukkit.scoreboard.Scoreboard scoreboard = Bukkit.getScoreboardManager().getMainScoreboard();
+        org.bukkit.scoreboard.Team team = scoreboard.getTeam("translucent");
+        if (team == null) {
+            team = scoreboard.registerNewTeam("translucent");
+            Bukkit.getLogger().info("[AfterlifeManager] Created new translucent team");
+        }
+        
+        if (isNight) {
+            // Night time: Add glowing effect with bright color
+            player.addPotionEffect(new PotionEffect(PotionEffectType.GLOWING, Integer.MAX_VALUE, 1, false, false));
+            team.setColor(org.bukkit.ChatColor.WHITE); // Bright white glow for night
+            Bukkit.getLogger().info("[AfterlifeManager] Applied NIGHT effects to " + player.getName() + " (glowing + white)");
+        } else {
+            // Day time: No glowing, just translucent
+            player.removePotionEffect(PotionEffectType.GLOWING);
+            team.setColor(org.bukkit.ChatColor.GRAY); // Subtle gray for day
+            Bukkit.getLogger().info("[AfterlifeManager] Applied DAY effects to " + player.getName() + " (translucent only)");
+        }
+        
+        team.addPlayer(player);
+    }
+    
+    public static void updateAllAfterlifePlayersDayNightEffect() {
+        Bukkit.getLogger().info("[AfterlifeManager] Updating day/night effects for all afterlife players. Total players: " + afterlifePlayers.size());
+        int updatedCount = 0;
+        for (Player player : afterlifePlayers) {
+            if (player.isOnline()) {
+                applyDayNightAfterlifeEffect(player);
+                updatedCount++;
+            }
+        }
+        Bukkit.getLogger().info("[AfterlifeManager] Updated " + updatedCount + " online afterlife players");
     }
 } 
