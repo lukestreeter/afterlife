@@ -216,22 +216,40 @@ public class MobMorphManager implements Listener {
             if (morphedEntity instanceof LivingEntity) {
                 LivingEntity livingMob = (LivingEntity) morphedEntity;
                 
-                // Find nearby entities to attack
-                livingMob.getNearbyEntities(3, 3, 3).stream()
-                    .filter(entity -> entity instanceof LivingEntity && !(entity instanceof Player))
-                    .findFirst()
-                    .ifPresent(target -> {
-                        if (target instanceof LivingEntity) {
-                            LivingEntity targetEntity = (LivingEntity) target;
-                            targetEntity.damage(4.0, livingMob); // Attack damage
-                            player.sendMessage(ChatColor.RED + "You attacked " + targetEntity.getName() + "!");
-                        }
-                    });
+                // Find the entity the player is looking at (within 15 blocks)
+                Entity target = getTargetEntity(player, 15.0);
                 
-                // If no entities found, just show a message
-                if (livingMob.getNearbyEntities(3, 3, 3).stream()
-                    .noneMatch(entity -> entity instanceof LivingEntity && !(entity instanceof Player))) {
-                    player.sendMessage(ChatColor.YELLOW + "No targets nearby to attack!");
+                if (target instanceof LivingEntity && !(target instanceof Player)) {
+                    LivingEntity targetEntity = (LivingEntity) target;
+                    
+                    // Make the morphed mob attack the target
+                    if (morphedEntity instanceof Mob) {
+                        Mob mob = (Mob) morphedEntity;
+                        mob.setTarget(targetEntity);
+                    }
+                    
+                    // Shoot laser projectile at target
+                    shootLaserProjectile(morphedEntity, targetEntity, player);
+                    player.sendMessage(ChatColor.RED + "Your " + morphedEntity.getName() + " shot laser eyes at " + targetEntity.getName() + "!");
+                } else {
+                    // If no specific target, attack nearby entities like before
+                    livingMob.getNearbyEntities(5, 5, 5).stream()
+                        .filter(entity -> entity instanceof LivingEntity && !(entity instanceof Player))
+                        .findFirst()
+                        .ifPresent(nearbyTarget -> {
+                            if (nearbyTarget instanceof LivingEntity) {
+                                LivingEntity targetEntity = (LivingEntity) nearbyTarget;
+                                
+                                // Shoot laser projectile at nearby target
+                                shootLaserProjectile(morphedEntity, targetEntity, player);
+                                player.sendMessage(ChatColor.RED + "Your " + morphedEntity.getName() + " shot laser eyes at " + targetEntity.getName() + "!");
+                            }
+                        });
+                    
+                    if (livingMob.getNearbyEntities(5, 5, 5).stream()
+                        .noneMatch(entity -> entity instanceof LivingEntity && !(entity instanceof Player))) {
+                        player.sendMessage(ChatColor.YELLOW + "No targets nearby to attack!");
+                    }
                 }
             }
         }
@@ -383,5 +401,73 @@ public class MobMorphManager implements Listener {
             task.cancel();
             movementTasks.remove(playerId);
         }
+    }
+
+    // Helper method to get the entity the player is looking at
+    private Entity getTargetEntity(Player player, double maxDistance) {
+        Location eyeLocation = player.getEyeLocation();
+        Vector direction = eyeLocation.getDirection();
+        
+        for (double distance = 0; distance <= maxDistance; distance += 0.5) {
+            Location checkLocation = eyeLocation.clone().add(direction.clone().multiply(distance));
+            
+            // Check for entities at this location
+            for (Entity entity : player.getWorld().getNearbyEntities(checkLocation, 0.5, 0.5, 0.5)) {
+                if (entity instanceof LivingEntity && !(entity instanceof Player) && entity != getMorphedEntity(player)) {
+                    return entity;
+                }
+            }
+        }
+        return null;
+    }
+
+    private static void shootLaserProjectile(Entity shooter, Entity target, Player player) {
+        Location shooterLocation = shooter.getLocation().add(0, 1, 0); // Shoot from head level
+        Location targetLocation = target.getLocation().add(0, 1, 0);
+
+        Vector direction = targetLocation.toVector().subtract(shooterLocation.toVector()).normalize();
+        double distance = shooterLocation.distance(targetLocation);
+
+        // Calculate projectile speed based on distance
+        double projectileSpeed = Math.min(1.5, 0.5 + (distance - 1.0) * 0.1);
+
+        // Create a fireball projectile for laser effect
+        org.bukkit.entity.Fireball fireball = shooter.getWorld().spawn(shooterLocation, org.bukkit.entity.Fireball.class);
+        
+        // Set fireball properties
+        fireball.setDirection(direction);
+        fireball.setVelocity(direction.multiply(projectileSpeed));
+        fireball.setYield(0.5f); // Small explosion
+        fireball.setIsIncendiary(false); // No fire spread
+        
+        // Make it look like a laser by setting it on fire briefly
+        fireball.setFireTicks(20); // 1 second of fire
+        
+        // Add a task to damage the target when the projectile hits
+        BukkitRunnable hitTask = new BukkitRunnable() {
+            int ticks = 0;
+            final int maxTicks = 20 * 3; // 3 seconds max flight time
+
+            @Override
+            public void run() {
+                if (ticks >= maxTicks || fireball.isDead()) {
+                    this.cancel();
+                    return;
+                }
+                
+                // Check if projectile hit the target
+                if (fireball.getLocation().distance(targetLocation) < 1.0) {
+                    if (target instanceof LivingEntity) {
+                        LivingEntity livingTarget = (LivingEntity) target;
+                        livingTarget.damage(8.0, shooter);
+                    }
+                    fireball.remove();
+                    this.cancel();
+                }
+                
+                ticks++;
+            }
+        };
+        hitTask.runTaskTimer(plugin, 0, 1);
     }
 } 
