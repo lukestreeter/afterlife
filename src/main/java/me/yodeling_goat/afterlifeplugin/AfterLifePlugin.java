@@ -18,7 +18,7 @@ import me.yodeling_goat.afterlifeplugin.afterlife.listeners.PlayerDeathListener;
 import me.yodeling_goat.afterlifeplugin.afterlife.listeners.EntityDeathListener;
 
 // Grave system
-import me.yodeling_goat.afterlifeplugin.grave.GraveManager;
+import me.yodeling_goat.afterlifeplugin.grave.listeners.PlayerEnteredAfterlifeListener;
 
 public class AfterLifePlugin extends JavaPlugin implements Listener {
     
@@ -28,17 +28,18 @@ public class AfterLifePlugin extends JavaPlugin implements Listener {
         
         // Register managers that implement Listener
         KarmaManager karmaManager = new KarmaManager();
-        GraveManager graveManager = new GraveManager();
         
         // Register managers as listeners
         Bukkit.getPluginManager().registerEvents(karmaManager, this);
-        Bukkit.getPluginManager().registerEvents(graveManager, this);
         
         // Register afterlife listeners
         Bukkit.getPluginManager().registerEvents(new AfterlifeEffectsListener(), this);
         Bukkit.getPluginManager().registerEvents(new AfterlifeRestrictionListener(), this);
         Bukkit.getPluginManager().registerEvents(new PlayerDeathListener(), this);
         Bukkit.getPluginManager().registerEvents(new EntityDeathListener(), this);
+
+        // Register grave listeners
+        Bukkit.getPluginManager().registerEvents(new PlayerEnteredAfterlifeListener(), this);
         
         // Register this plugin as a listener for player join events
         Bukkit.getPluginManager().registerEvents(this, this);
