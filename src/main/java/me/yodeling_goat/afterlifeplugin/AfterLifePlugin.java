@@ -51,6 +51,7 @@ public class AfterLifePlugin extends JavaPlugin implements Listener {
         
         // Register impersonation listeners
         Bukkit.getPluginManager().registerEvents(new ImpersonationListener(), this);
+        Bukkit.getPluginManager().registerEvents(new EntitySpawnListener(), this);
         
         // Start the periodic time update task
         getLogger().info("Starting AfterlifeTimeListener periodic updates...");
@@ -68,6 +69,7 @@ public class AfterLifePlugin extends JavaPlugin implements Listener {
         // Register impersonation commands
         getCommand("impersonate").setExecutor(new ImpersonationCommand());
         getCommand("unimpersonate").setExecutor(new ImpersonationCommand());
+        getCommand("debugimpersonate").setExecutor(new ImpersonationCommand());
         
         getLogger().info("AfterLifePlugin has been enabled!");
     }

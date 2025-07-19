@@ -13,6 +13,7 @@ public class ImpersonationUpdateTask extends BukkitRunnable {
         // Update all impersonation locations every 5 ticks (4 times per second)
         for (Player player : Bukkit.getOnlinePlayers()) {
             if (ImpersonationManager.isPlayerImpersonating(player)) {
+                boolean foundEntity = false;
                 // Find the animal entity associated with this player
                 for (Entity entity : player.getWorld().getEntities()) {
                     if (entity.hasMetadata("animal_disguise_player") && 
@@ -20,9 +21,14 @@ public class ImpersonationUpdateTask extends BukkitRunnable {
                         if (!entity.isDead()) {
                             // Teleport the animal to the player's location
                             entity.teleport(player.getLocation());
+                            foundEntity = true;
                         }
                         break;
                     }
+                }
+                
+                if (!foundEntity) {
+                    Bukkit.getLogger().warning("[ImpersonationUpdateTask] Could not find animal entity for player: " + player.getName());
                 }
             }
         }

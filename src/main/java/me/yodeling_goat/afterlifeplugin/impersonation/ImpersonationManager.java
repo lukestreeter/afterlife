@@ -125,7 +125,8 @@ public class ImpersonationManager {
         player.addPotionEffect(new PotionEffect(PotionEffectType.NIGHT_VISION, Integer.MAX_VALUE, 0, false, false));
         
         // Execute the summon command directly to create the animal disguise
-        String command = buildAnimalSummonCommand(target.getType(), player.getName());
+        String command = buildAnimalSummonCommand(target.getType(), player.getName(), player.getLocation());
+        Bukkit.getLogger().info("[ImpersonationManager] Executing command: " + command);
         org.bukkit.Bukkit.dispatchCommand(org.bukkit.Bukkit.getConsoleSender(), command);
         
         // Store the player name in metadata for tracking
@@ -142,34 +143,34 @@ public class ImpersonationManager {
         impersonatingTeam.addPlayer(player);
     }
     
-    private static String buildAnimalSummonCommand(org.bukkit.entity.EntityType entityType, String playerName) {
+    private static String buildAnimalSummonCommand(org.bukkit.entity.EntityType entityType, String playerName, org.bukkit.Location location) {
         // Create a summon command with specific properties for the animal disguise
-        String baseCommand = "summon " + entityType.name().toLowerCase();
+        String baseCommand = "summon " + entityType.name().toLowerCase() + " " + location.getX() + " " + location.getY() + " " + location.getZ();
         
         // Add custom properties based on entity type
         switch (entityType) {
             case CHICKEN:
-                return baseCommand + " ~ ~ ~ {CustomName:\"\\u00a76Chicken Disguise\",CustomNameVisible:1b,Invulnerable:1b,NoAI:1b,Silent:1b,Glowing:1b,Tags:[\"animal_disguise\",\"" + playerName + "\"]}";
+                return baseCommand + " {CustomName:\"\\u00a76Chicken Disguise\",CustomNameVisible:1b,Invulnerable:1b,NoAI:1b,Silent:1b,Glowing:1b,Tags:[\"animal_disguise\",\"" + playerName + "\"]}";
             case COW:
-                return baseCommand + " ~ ~ ~ {CustomName:\"\\u00a76Cow Disguise\",CustomNameVisible:1b,Invulnerable:1b,NoAI:1b,Silent:1b,Glowing:1b,Tags:[\"animal_disguise\",\"" + playerName + "\"]}";
+                return baseCommand + " {CustomName:\"\\u00a76Cow Disguise\",CustomNameVisible:1b,Invulnerable:1b,NoAI:1b,Silent:1b,Glowing:1b,Tags:[\"animal_disguise\",\"" + playerName + "\"]}";
             case PIG:
-                return baseCommand + " ~ ~ ~ {CustomName:\"\\u00a76Pig Disguise\",CustomNameVisible:1b,Invulnerable:1b,NoAI:1b,Silent:1b,Glowing:1b,Tags:[\"animal_disguise\",\"" + playerName + "\"]}";
+                return baseCommand + " {CustomName:\"\\u00a76Pig Disguise\",CustomNameVisible:1b,Invulnerable:1b,NoAI:1b,Silent:1b,Glowing:1b,Tags:[\"animal_disguise\",\"" + playerName + "\"]}";
             case SHEEP:
-                return baseCommand + " ~ ~ ~ {CustomName:\"\\u00a76Sheep Disguise\",CustomNameVisible:1b,Invulnerable:1b,NoAI:1b,Silent:1b,Glowing:1b,Tags:[\"animal_disguise\",\"" + playerName + "\"]}";
+                return baseCommand + " {CustomName:\"\\u00a76Sheep Disguise\",CustomNameVisible:1b,Invulnerable:1b,NoAI:1b,Silent:1b,Glowing:1b,Tags:[\"animal_disguise\",\"" + playerName + "\"]}";
             case HORSE:
-                return baseCommand + " ~ ~ ~ {CustomName:\"\\u00a76Horse Disguise\",CustomNameVisible:1b,Invulnerable:1b,NoAI:1b,Silent:1b,Glowing:1b,Tags:[\"animal_disguise\",\"" + playerName + "\"]}";
+                return baseCommand + " {CustomName:\"\\u00a76Horse Disguise\",CustomNameVisible:1b,Invulnerable:1b,NoAI:1b,Silent:1b,Glowing:1b,Tags:[\"animal_disguise\",\"" + playerName + "\"]}";
             case RABBIT:
-                return baseCommand + " ~ ~ ~ {CustomName:\"\\u00a76Rabbit Disguise\",CustomNameVisible:1b,Invulnerable:1b,NoAI:1b,Silent:1b,Glowing:1b,Tags:[\"animal_disguise\",\"" + playerName + "\"]}";
+                return baseCommand + " {CustomName:\"\\u00a76Rabbit Disguise\",CustomNameVisible:1b,Invulnerable:1b,NoAI:1b,Silent:1b,Glowing:1b,Tags:[\"animal_disguise\",\"" + playerName + "\"]}";
             case FOX:
-                return baseCommand + " ~ ~ ~ {CustomName:\"\\u00a76Fox Disguise\",CustomNameVisible:1b,Invulnerable:1b,NoAI:1b,Silent:1b,Glowing:1b,Tags:[\"animal_disguise\",\"" + playerName + "\"]}";
+                return baseCommand + " {CustomName:\"\\u00a76Fox Disguise\",CustomNameVisible:1b,Invulnerable:1b,NoAI:1b,Silent:1b,Glowing:1b,Tags:[\"animal_disguise\",\"" + playerName + "\"]}";
             case WOLF:
-                return baseCommand + " ~ ~ ~ {CustomName:\"\\u00a76Wolf Disguise\",CustomNameVisible:1b,Invulnerable:1b,NoAI:1b,Silent:1b,Glowing:1b,Tags:[\"animal_disguise\",\"" + playerName + "\"]}";
+                return baseCommand + " {CustomName:\"\\u00a76Wolf Disguise\",CustomNameVisible:1b,Invulnerable:1b,NoAI:1b,Silent:1b,Glowing:1b,Tags:[\"animal_disguise\",\"" + playerName + "\"]}";
             case CAT:
-                return baseCommand + " ~ ~ ~ {CustomName:\"\\u00a76Cat Disguise\",CustomNameVisible:1b,Invulnerable:1b,NoAI:1b,Silent:1b,Glowing:1b,Tags:[\"animal_disguise\",\"" + playerName + "\"]}";
+                return baseCommand + " {CustomName:\"\\u00a76Cat Disguise\",CustomNameVisible:1b,Invulnerable:1b,NoAI:1b,Silent:1b,Glowing:1b,Tags:[\"animal_disguise\",\"" + playerName + "\"]}";
             case PARROT:
-                return baseCommand + " ~ ~ ~ {CustomName:\"\\u00a76Parrot Disguise\",CustomNameVisible:1b,Invulnerable:1b,NoAI:1b,Silent:1b,Glowing:1b,Tags:[\"animal_disguise\",\"" + playerName + "\"]}";
+                return baseCommand + " {CustomName:\"\\u00a76Parrot Disguise\",CustomNameVisible:1b,Invulnerable:1b,NoAI:1b,Silent:1b,Glowing:1b,Tags:[\"animal_disguise\",\"" + playerName + "\"]}";
             default:
-                return baseCommand + " ~ ~ ~ {CustomName:\"\\u00a76" + entityType.name().toLowerCase() + " Disguise\",CustomNameVisible:1b,Invulnerable:1b,NoAI:1b,Silent:1b,Glowing:1b,Tags:[\"animal_disguise\",\"" + playerName + "\"]}";
+                return baseCommand + " {CustomName:\"\\u00a76" + entityType.name().toLowerCase() + " Disguise\",CustomNameVisible:1b,Invulnerable:1b,NoAI:1b,Silent:1b,Glowing:1b,Tags:[\"animal_disguise\",\"" + playerName + "\"]}";
         }
     }
 

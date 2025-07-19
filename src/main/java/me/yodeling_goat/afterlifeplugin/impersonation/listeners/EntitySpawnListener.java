@@ -15,6 +15,8 @@ public class EntitySpawnListener implements Listener {
         
         // Check if this is an animal disguise entity by looking for the tag
         if (entity.getScoreboardTags().contains("animal_disguise")) {
+            Bukkit.getLogger().info("[EntitySpawnListener] Found animal disguise entity: " + entity.getType());
+            
             // Find the player name from the tags
             String playerName = null;
             for (String tag : entity.getScoreboardTags()) {
@@ -28,6 +30,7 @@ public class EntitySpawnListener implements Listener {
                 // Add metadata to the entity to link it to the player
                 entity.setMetadata("animal_disguise_player", 
                     new FixedMetadataValue(Bukkit.getPluginManager().getPlugin("AfterLifePlugin"), playerName));
+                Bukkit.getLogger().info("[EntitySpawnListener] Linked entity to player: " + playerName);
             }
         }
     }

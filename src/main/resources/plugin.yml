@@ -11,3 +11,6 @@ commands:
   unimpersonate:
     description: Stop impersonating an animal and return to normal
     usage: /unimpersonate
+  debugimpersonate:
+    description: Debug impersonation system
+    usage: /debugimpersonate

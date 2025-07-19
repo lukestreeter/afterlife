@@ -4,6 +4,7 @@ import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
+import org.bukkit.entity.Entity;
 import me.yodeling_goat.afterlifeplugin.impersonation.ImpersonationManager;
 
 public class ImpersonationCommand implements CommandExecutor {
@@ -40,6 +41,28 @@ public class ImpersonationCommand implements CommandExecutor {
                 player.sendMessage("§7- Use /unimpersonate to return to normal");
             } else {
                 player.sendMessage("§cUsage: /impersonate");
+            }
+            return true;
+        }
+        
+        if (command.getName().equalsIgnoreCase("debugimpersonate")) {
+            if (args.length == 0) {
+                player.sendMessage("§eDebug information:");
+                player.sendMessage("§7- Is impersonating: " + ImpersonationManager.isPlayerImpersonating(player));
+                player.sendMessage("§7- Has metadata: " + player.hasMetadata("animal_disguise"));
+                if (player.hasMetadata("animal_disguise")) {
+                    player.sendMessage("§7- Metadata value: " + player.getMetadata("animal_disguise").get(0).value());
+                }
+                
+                // Count entities with animal_disguise tag
+                int count = 0;
+                for (Entity entity : player.getWorld().getEntities()) {
+                    if (entity.getScoreboardTags().contains("animal_disguise")) {
+                        count++;
+                        player.sendMessage("§7- Found animal disguise entity: " + entity.getType() + " at " + entity.getLocation());
+                    }
+                }
+                player.sendMessage("§7- Total animal disguise entities: " + count);
             }
             return true;
         }
