@@ -31,6 +31,7 @@ public class AfterlifeManager {
         player.removePotionEffect(PotionEffectType.NIGHT_VISION);
         player.removePotionEffect(PotionEffectType.CONFUSION);
         player.removePotionEffect(PotionEffectType.BLINDNESS);
+        player.removePotionEffect(PotionEffectType.SATURATION);
         
         // Reset to survival mode
         player.setGameMode(GameMode.SURVIVAL);
@@ -61,6 +62,9 @@ public class AfterlifeManager {
         // Reapply permanent potion effects
         player.addPotionEffect(new PotionEffect(PotionEffectType.GLOWING, Integer.MAX_VALUE, 0, false, false));
         player.addPotionEffect(new PotionEffect(PotionEffectType.NIGHT_VISION, Integer.MAX_VALUE, 0, false, false));
+        
+        // Add hunger immunity
+        player.addPotionEffect(new PotionEffect(PotionEffectType.SATURATION, Integer.MAX_VALUE, 0, false, false));
         
         // Clear inventory (since afterlife players shouldn't have items)
         player.getInventory().clear();

@@ -26,6 +26,8 @@ import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 import org.bukkit.event.entity.EntityDamageEvent;
 
+import me.yodeling_goat.afterlifeplugin.afterlife.AfterlifeManager;
+
 import java.util.HashMap;
 import java.util.UUID;
 import java.util.Collections;
@@ -71,7 +73,7 @@ public class MobMorphManager implements Listener {
         // Hide the original player and put them in adventure mode for WASD control
         player.addPotionEffect(new PotionEffect(PotionEffectType.INVISIBILITY, Integer.MAX_VALUE, 0, true, false));
         player.removePotionEffect(PotionEffectType.GLOWING); // Remove glowing effect when morphed
-        player.setGameMode(GameMode.ADVENTURE);
+        player.setGameMode(GameMode.ADVENTURE); // Use adventure mode to prevent teleporting
         player.setAllowFlight(true);
         player.setFlying(true);
         
@@ -115,8 +117,16 @@ public class MobMorphManager implements Listener {
         player.removePotionEffect(PotionEffectType.INVISIBILITY);
         player.addPotionEffect(new PotionEffect(PotionEffectType.GLOWING, Integer.MAX_VALUE, 0, false, false)); // Restore glowing effect
         player.setGameMode(originalGameModes.get(playerId));
-        player.setAllowFlight(false);
-        player.setFlying(false);
+        
+        // Restore flight state based on whether player is in afterlife
+        if (AfterlifeManager.isInAfterlife(player)) {
+            player.setAllowFlight(true);
+            player.setFlying(true);
+        } else {
+            player.setAllowFlight(false);
+            player.setFlying(false);
+        }
+        
         player.teleport(originalLocations.get(playerId));
         
         // Restore inventory
@@ -209,6 +219,7 @@ public class MobMorphManager implements Listener {
         if (isMorphed(player) && (event.getAction() == Action.LEFT_CLICK_AIR || event.getAction() == Action.LEFT_CLICK_BLOCK)) {
             // Don't attack if we're holding the exit head
             if (item != null && item.getType().name().contains("HEAD")) {
+                player.sendMessage(ChatColor.YELLOW + "You can't shoot while holding the exit head!");
                 return;
             }
             
@@ -230,7 +241,6 @@ public class MobMorphManager implements Listener {
                     
                     // Shoot laser projectile at target
                     shootLaserProjectile(morphedEntity, target, player);
-                    player.sendMessage(ChatColor.RED + "Your " + morphedEntity.getName() + " shot laser eyes at " + target.getName() + "!");
                 } else if (target == player) {
                     // If player is targeting themselves, show a message
                     player.sendMessage(ChatColor.YELLOW + "You can't shoot yourself!");
@@ -239,7 +249,6 @@ public class MobMorphManager implements Listener {
                     Location blockTarget = getBlockTarget(player, 100.0);
                     if (blockTarget != null) {
                         shootLaserAtBlock(morphedEntity, blockTarget, player);
-                        player.sendMessage(ChatColor.RED + "Your " + morphedEntity.getName() + " shot laser eyes at " + blockTarget.getBlock().getType().name() + "!");
                     } else {
                         // If no specific target, attack nearby entities like before
                         livingMob.getNearbyEntities(5, 5, 5).stream()
@@ -248,7 +257,6 @@ public class MobMorphManager implements Listener {
                             .ifPresent(nearbyTarget -> {
                                 // Shoot laser projectile at nearby target
                                 shootLaserProjectile(morphedEntity, nearbyTarget, player);
-                                player.sendMessage(ChatColor.RED + "Your " + morphedEntity.getName() + " shot laser eyes at " + nearbyTarget.getName() + "!");
                             });
                         
                         if (livingMob.getNearbyEntities(5, 5, 5).stream()
@@ -355,15 +363,56 @@ public class MobMorphManager implements Listener {
     
     @EventHandler
     public void onEntityDamage(EntityDamageEvent event) {
-        // Protect morphed entities from taking damage
+        // Protect morphed entities and controlling players from ALL damage
         Entity damagedEntity = event.getEntity();
+        
+        // Check if the damaged entity is a morphed entity
         for (Entity morphedEntity : morphedPlayers.values()) {
             if (morphedEntity.equals(damagedEntity)) {
+                // Cancel ALL damage to morphed entities
+                event.setCancelled(true);
+                return;
+            }
+        }
+        
+        // Check if the damaged entity is a player controlling a morphed entity
+        if (damagedEntity instanceof Player) {
+            Player player = (Player) damagedEntity;
+            if (isMorphed(player)) {
+                // Cancel ALL damage to controlling player
                 event.setCancelled(true);
                 return;
             }
         }
     }
+    
+    @EventHandler
+    public void onEntityDamageByEntity(EntityDamageByEntityEvent event) {
+        // Protect morphed entities and controlling players from ALL damage
+        Entity damagedEntity = event.getEntity();
+        Entity damager = event.getDamager();
+        
+        // Check if the damaged entity is a morphed entity
+        for (Entity morphedEntity : morphedPlayers.values()) {
+            if (morphedEntity.equals(damagedEntity)) {
+                // Cancel ALL damage to morphed entities
+                event.setCancelled(true);
+                return;
+            }
+        }
+        
+        // Check if the damaged entity is a player controlling a morphed entity
+        if (damagedEntity instanceof Player) {
+            Player player = (Player) damagedEntity;
+            if (isMorphed(player)) {
+                // Cancel ALL damage to controlling player
+                event.setCancelled(true);
+                return;
+            }
+        }
+    }
+    
+
 
     
     private static void giveExitMorphItem(Player player) {
@@ -456,19 +505,22 @@ public class MobMorphManager implements Listener {
         // Create a fireball projectile for laser effect
         org.bukkit.entity.Fireball fireball = shooter.getWorld().spawn(shooterLocation, org.bukkit.entity.Fireball.class);
         
-        // Set fireball properties
+        // Set fireball properties - BIGGER EXPLOSIONS with sheep protection
         fireball.setDirection(direction);
         fireball.setVelocity(direction.multiply(projectileSpeed));
-        fireball.setYield(2.0f); // Increased explosion radius (was 0.5f)
-        fireball.setIsIncendiary(true); // Allow fire spread for more dramatic effect
+        fireball.setYield(4.0f); // BIG explosion radius (was 0.0f)
+        fireball.setIsIncendiary(true); // Allow fire spread for dramatic effect
         
         // Make it look like a laser by setting it on fire briefly
         fireball.setFireTicks(20); // 1 second of fire
         
+        // Store the morphed entity to protect it from this fireball
+        Entity morphedEntity = getMorphedEntity(player);
+        
         // Add a task to damage the target when the projectile hits
         BukkitRunnable hitTask = new BukkitRunnable() {
             int ticks = 0;
-            final int maxTicks = 20 * 3; // 3 seconds max flight time
+            final int maxTicks = 20 * 2; // Reduced to 2 seconds max flight time
 
             @Override
             public void run() {
@@ -482,7 +534,10 @@ public class MobMorphManager implements Listener {
                     // Handle different entity types
                     if (target instanceof LivingEntity) {
                         LivingEntity livingTarget = (LivingEntity) target;
-                        livingTarget.damage(12.0, shooter); // Increased damage (was 8.0)
+                        // Don't damage the morphed entity or the controlling player
+                        if (target != morphedEntity && target != player) {
+                            livingTarget.damage(12.0, shooter); // Increased damage (was 8.0)
+                        }
                     } else if (target instanceof org.bukkit.entity.Item) {
                         // Destroy items
                         target.remove();
@@ -519,19 +574,22 @@ public class MobMorphManager implements Listener {
         // Create a fireball projectile for laser effect
         org.bukkit.entity.Fireball fireball = shooter.getWorld().spawn(shooterLocation, org.bukkit.entity.Fireball.class);
         
-        // Set fireball properties
+        // Set fireball properties - BIGGER EXPLOSIONS with sheep protection
         fireball.setDirection(direction);
         fireball.setVelocity(direction.multiply(projectileSpeed));
-        fireball.setYield(2.0f); // Big explosion
-        fireball.setIsIncendiary(true); // Allow fire spread
+        fireball.setYield(4.0f); // BIG explosion radius (was 0.0f)
+        fireball.setIsIncendiary(true); // Allow fire spread for dramatic effect
         
         // Make it look like a laser by setting it on fire briefly
         fireball.setFireTicks(20); // 1 second of fire
         
+        // Store the morphed entity to protect it from this fireball
+        Entity morphedEntity = getMorphedEntity(player);
+        
         // Add a task to break the block when the projectile hits
         BukkitRunnable hitTask = new BukkitRunnable() {
             int ticks = 0;
-            final int maxTicks = 20 * 3; // 3 seconds max flight time
+            final int maxTicks = 20 * 2; // Reduced to 2 seconds max flight time
 
             @Override
             public void run() {
@@ -542,8 +600,29 @@ public class MobMorphManager implements Listener {
                 
                 // Check if projectile hit the block
                 if (fireball.getLocation().distance(blockLocation) < 1.0) {
-                    // Break the block
-                    blockLocation.getBlock().setType(org.bukkit.Material.AIR);
+                    // Break multiple blocks in a radius around the impact point
+                    Location impactLocation = fireball.getLocation();
+                    int radius = 3; // 3 block radius for destruction
+                    
+                    for (int x = -radius; x <= radius; x++) {
+                        for (int y = -radius; y <= radius; y++) {
+                            for (int z = -radius; z <= radius; z++) {
+                                Location blockLoc = impactLocation.clone().add(x, y, z);
+                                double distance = impactLocation.distance(blockLoc);
+                                
+                                // Only break blocks within the radius
+                                if (distance <= radius) {
+                                    org.bukkit.block.Block block = blockLoc.getBlock();
+                                    // Don't break bedrock or other unbreakable blocks
+                                    if (block.getType() != org.bukkit.Material.BEDROCK && 
+                                        block.getType() != org.bukkit.Material.BARRIER &&
+                                        block.getType() != org.bukkit.Material.COMMAND_BLOCK) {
+                                        block.setType(org.bukkit.Material.AIR);
+                                    }
+                                }
+                            }
+                        }
+                    }
                     
                     fireball.remove();
                     this.cancel();
