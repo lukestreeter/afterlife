@@ -8,6 +8,7 @@ import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 import me.yodeling_goat.afterlifeplugin.afterlife.events.PlayerEnterAfterlifeEvent;
 import org.bukkit.Location;
+import me.yodeling_goat.afterlifeplugin.karma.KarmaManager;
 
 public class AfterlifeManager {
     private static final Set<Player> afterlifePlayers = new HashSet<>();
@@ -63,6 +64,9 @@ public class AfterlifeManager {
         
         // Set health to max
         player.setHealth(player.getMaxHealth());
+
+        // remove karma display
+        KarmaManager.removeKarmaDisplay(player);
     }
 
     public static void applyTemporaryAfterlifeEffects(Player player) {
