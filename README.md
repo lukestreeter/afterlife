@@ -59,7 +59,18 @@ It could also depend on what you have built, materials you've used, entities you
 - A comppass that serves as a navigator to other worlds/dimension when in the afterlife!
 - A lobby to select different gamemodes? Hardcore Survival or something crazy that we might stir up!
 -Fixing Possession: No hunger when in afterlife, No Head in your hotbar, No debug checking log, Shift as getting out of morph, Way to attack things and players, Dying when you can't fly???, No glowing effect when you morph.
-
+ Notes on Hypixel:
+ When you die your body lays flat on the floor.
+ Cosmetics (Rewards I guess for playing the game)
+ Texture Packs
+ Minigames
+ Disasters (Survive it)
+ Murder Mystery 
+ Sky Wars
+ Bed Wars
+ Parkour
+ A main lobby to choose games
+ Lobbies for the games
 [minecraft]: https://www.minecraft.net
 [spigot]: https://www.spigotmc.org/
 [asdf]: https://asdf-vm.com
