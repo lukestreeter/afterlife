@@ -20,6 +20,7 @@ public class AfterlifeManager {
 
     public static void removeFromAfterlife(Player player) {
         afterlifePlayers.remove(player);
+        
         removeAfterlifeEffects(player);
     }
 
@@ -38,9 +39,13 @@ public class AfterlifeManager {
     }
 
     public static void applyPermanentAfterlifeEffects(Player player) {
-        // Reapply flight
+        // Reapply flight - ensure they can always fly
         player.setAllowFlight(true);
         player.setFlying(true);
+        
+        // Disable hunger for afterlife players
+        player.setFoodLevel(20);
+        player.setSaturation(20.0f);
         
         // Apply semi-transparent effect
         // Make player invisible but keep their outline
@@ -101,5 +106,8 @@ public class AfterlifeManager {
         // Disable flight
         player.setAllowFlight(false);
         player.setFlying(false);
+        
+        // Restore normal hunger (let it regenerate naturally)
+        // Don't set specific values, let the game handle it
     }
 } 
