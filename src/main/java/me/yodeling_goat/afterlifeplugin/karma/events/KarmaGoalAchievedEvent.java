@@ -3,6 +3,8 @@ package me.yodeling_goat.afterlifeplugin.karma.events;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Event;
 import org.bukkit.event.HandlerList;
+import java.util.List;
+import me.yodeling_goat.afterlifeplugin.karma.KarmaGoalManager.RewardItem;
 
 public class KarmaGoalAchievedEvent extends Event {
     private static final HandlerList handlers = new HandlerList();
@@ -10,16 +12,16 @@ public class KarmaGoalAchievedEvent extends Event {
     private final String goalName;
     private final int karmaThreshold;
     private final String rewardType;
-    private final String rewardData;
+    private final List<RewardItem> rewardItems;
     private final String message;
 
     public KarmaGoalAchievedEvent(Player player, String goalName, int karmaThreshold, 
-                                 String rewardType, String rewardData, String message) {
+                                 String rewardType, List<RewardItem> rewardItems, String message) {
         this.player = player;
         this.goalName = goalName;
         this.karmaThreshold = karmaThreshold;
         this.rewardType = rewardType;
-        this.rewardData = rewardData;
+        this.rewardItems = rewardItems;
         this.message = message;
     }
 
@@ -27,7 +29,7 @@ public class KarmaGoalAchievedEvent extends Event {
     public String getGoalName() { return goalName; }
     public int getKarmaThreshold() { return karmaThreshold; }
     public String getRewardType() { return rewardType; }
-    public String getRewardData() { return rewardData; }
+    public List<RewardItem> getRewardItems() { return rewardItems; }
     public String getMessage() { return message; }
 
     @Override

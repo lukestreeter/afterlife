@@ -9,33 +9,140 @@ boss-bar:
 
 # Karma Goals Configuration
 karma-goals:
-  # Format: goal_name: {threshold: karma_value, reward: reward_type, reward_data: data}
   first-step:
+    threshold: 5
+    reward_type: "item"
+    reward_items:
+      - id: "IRON_SWORD"
+        name: "Iron Sword"
+        multiplier: 1
+        chance: 1.0
+        enchantment: null
+        enchantment_level: null
+    message: "§a§lKARMA GOAL ACHIEVED! §r§aYou've reached 5 karma and received a Iron Sword!"
+
+  dennis:
+    threshold: 10
+    reward_type: "item"
+    reward_items:
+      - id: "WOLF_SPAWN_EGG"
+        name: "Wolf Spawn Egg"
+        multiplier: 2
+        chance: 1.0
+        enchantment: null
+        enchantment_level: null
+    message: "§a§lKARMA GOAL ACHIEVED! §r§aYou've reached 10 karma and received two Wolf Spawn Eggs!"
+
+  creeper:
+    threshold: 15
+    reward_type: "item"
+    reward_items:
+      - id: "TNT"
+        name: "TNT Block"
+        multiplier: 4
+        chance: 1.0
+        enchantment: null
+        enchantment_level: null
+    message: "§a§lKARMA GOAL ACHIEVED! §r§aYou've reached 15 karma and received four TNT blocks!"
+
+  garret:
+    threshold: 20
+    reward_type: "item"
+    reward_items:
+      - id: "DIAMOND_SWORD"
+        name: "Diamond Sword"
+        multiplier: 1
+        chance: 1.0
+        enchantment: null
+        enchantment_level: null
+    message: "§a§lKARMA GOAL ACHIEVED! §r§aYou've reached 20 karma and received a Diamond Sword!"
+
+  malgosha:
     threshold: 25
-    reward: "item"
-    reward_data: "DIAMOND_SWORD"
-    message: "§a§lKARMA GOAL ACHIEVED! §r§aYou've reached 25 karma and received a Diamond Sword!"
+    reward_type: "item"
+    reward_items:
+      - id: "GOLDEN_SWORD"
+        name: "Gold Sword"
+        multiplier: 1
+        chance: 1.0
+        enchantment: "bane_of_arthropods"
+        enchantment_level: 2
+    message: "§a§lKARMA GOAL ACHIEVED! §r§aYou've reached 25 karma and received a Gold Sword!"
   
-  good-citizen:
-    threshold: 50
-    reward: "item"
-    reward_data: "DIAMOND_CHESTPLATE"
-    message: "§a§lKARMA GOAL ACHIEVED! §r§aYou've reached 50 karma and received a Diamond Chestplate!"
+  nitwit:
+    threshold: 30
+    reward_type: "item"
+    reward_items:
+      - id: "GOLDEN_APPLE"
+        name: "Amazing Golden Apples"
+        multiplier: 4
+        chance: 0.1
+        enchantment: null
+        enchantment_level: null
+      - id: "GOLDEN_APPLE"
+        name: "Amazing Golden Apples"
+        multiplier: 2
+        chance: 0.5
+        enchantment: null
+        enchantment_level: null
+      - id: "GOLDEN_SWORD"
+        name: "SCARY GOLDEN SWORD"
+        multiplier: 1
+        chance: 0.4
+        enchantment: "bane_of_arthropods"
+        enchantment_level: 4
+    message: "§a§lKARMA GOAL ACHIEVED! §r§a Holy Hand Grenade!"
+
+  chungus:
+    threshold: 35
+    reward_type: "item"
+    reward_items:
+      - id: "DIAMOND_PICKAXE"
+        name: "Looting Pickaxe"
+        multiplier: 1
+        chance: 1.0
+        enchantment: "looting"
+        enchantment_level: 3
+    message: "§a§lKARMA GOAL ACHIEVED! §r§aYou've reached 35 karma and received a Looting Pickaxe!"
   
   hero:
     threshold: 75
-    reward: "item"
-    reward_data: "NETHERITE_SWORD"
+    reward_type: "item"
+    reward_items:
+      - id: "NETHERITE_SWORD"
+        name: "Netherite Sword"
+        multiplier: 1
+        chance: 1.0
+        enchantment: null
+        enchantment_level: null
     message: "§a§lKARMA GOAL ACHIEVED! §r§aYou've reached 75 karma and received a Netherite Sword!"
   
   legend:
     threshold: 100
-    reward: "item"
-    reward_data: "NETHERITE_CHESTPLATE"
-    message: "§a§lKARMA GOAL ACHIEVED! §r§aYou've reached 100 karma and received a Netherite Chestplate!"
+    reward_type: "item"
+    reward_items:
+      - id: "NETHERITE_BOOTS"
+        name: "Netherite Boots"
+        multiplier: 1
+        chance: 1.0
+        enchantment: null
+        enchantment_level: null
+    message: "§a§lKARMA GOAL ACHIEVED! §r§aYou've reached 100 karma and received Netherite Boots!"
+
+  steve:
+    threshold: 150
+    reward_type: "item"
+    reward_items:
+      - id: "NETHERITE_CHESTPLATE"
+        name: "Netherite Chestplate"
+        multiplier: 1
+        chance: 1.0
+        enchantment: null
+        enchantment_level: null
+    message: "§a§lKARMA GOAL ACHIEVED! §r§aYou've reached 150 karma and received a Netherite Chestplate!"
 
 # Karma System Configuration
 karma:
   default-value: 50
   min-value: 1
-  max-value: 100 
+  max-value: 150

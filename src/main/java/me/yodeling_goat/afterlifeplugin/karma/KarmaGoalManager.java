@@ -15,6 +15,10 @@ import me.yodeling_goat.afterlifeplugin.karma.events.KarmaGoalAchievedEvent;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
+import java.util.List;
+import java.util.ArrayList;
+import java.util.Random;
+import org.bukkit.enchantments.Enchantment;
 
 public class KarmaGoalManager implements Listener {
     private final JavaPlugin plugin;
@@ -37,11 +41,25 @@ public class KarmaGoalManager implements Listener {
             ConfigurationSection goalSection = goalsSection.getConfigurationSection(goalName);
             if (goalSection != null) {
                 int threshold = goalSection.getInt("threshold", 0);
-                String rewardType = goalSection.getString("reward", "item");
-                String rewardData = goalSection.getString("reward_data", "");
+                String rewardType = goalSection.getString("reward_type", "item");
                 String message = goalSection.getString("message", "§a§lKARMA GOAL ACHIEVED!");
-
-                karmaGoals.put(goalName, new KarmaGoal(goalName, threshold, rewardType, rewardData, message));
+                List<RewardItem> rewardItems = new ArrayList<>();
+                if (goalSection.isList("reward_items")) {
+                    List<?> items = goalSection.getList("reward_items");
+                    for (Object obj : items) {
+                        if (obj instanceof Map) {
+                            Map<?, ?> map = (Map<?, ?>) obj;
+                            String id = map.get("id") != null ? map.get("id").toString() : "STONE";
+                            String name = map.get("name") != null ? map.get("name").toString() : id;
+                            int multiplier = map.get("multiplier") != null ? ((Number) map.get("multiplier")).intValue() : 1;
+                            double chance = map.get("chance") != null ? ((Number) map.get("chance")).doubleValue() : 1.0;
+                            String enchantment = map.get("enchantment") != null ? map.get("enchantment").toString() : null;
+                            Integer enchantmentLevel = map.get("enchantment_level") != null ? ((Number) map.get("enchantment_level")).intValue() : null;
+                            rewardItems.add(new RewardItem(id, name, multiplier, chance, enchantment, enchantmentLevel));
+                        }
+                    }
+                }
+                karmaGoals.put(goalName, new KarmaGoal(goalName, threshold, rewardType, rewardItems, message));
             }
         }
         plugin.getLogger().info("Loaded " + karmaGoals.size() + " karma goals");
@@ -77,7 +95,7 @@ public class KarmaGoalManager implements Listener {
         // Fire the event
         KarmaGoalAchievedEvent event = new KarmaGoalAchievedEvent(
             player, goal.getName(), goal.getThreshold(), 
-            goal.getRewardType(), goal.getRewardData(), goal.getMessage()
+            goal.getRewardType(), goal.getRewardItems(), goal.getMessage()
         );
         Bukkit.getPluginManager().callEvent(event);
 
@@ -92,23 +110,37 @@ public class KarmaGoalManager implements Listener {
     }
 
     private void giveReward(Player player, KarmaGoal goal) {
-        if ("item".equals(goal.getRewardType())) {
-            try {
-                Material material = Material.valueOf(goal.getRewardData());
-                ItemStack item = new ItemStack(material);
-                
-                // Try to add to inventory, drop if full
-                if (player.getInventory().addItem(item).isEmpty()) {
-                    player.sendMessage("§aReward added to your inventory!");
-                } else {
-                    player.getWorld().dropItemNaturally(player.getLocation(), item);
-                    player.sendMessage("§aReward dropped at your feet (inventory full)!");
-                }
-            } catch (IllegalArgumentException e) {
-                plugin.getLogger().warning("Invalid material for karma goal reward: " + goal.getRewardData());
+        if ("item".equals(goal.getRewardType()) && !goal.getRewardItems().isEmpty()) {
+            RewardItem selected = selectWeightedRandomReward(goal.getRewardItems());
+            if (selected == null) {
+                plugin.getLogger().warning("No valid reward item selected for goal: " + goal.getName());
+                return;
             }
+            Material material;
+            try {
+                material = Material.valueOf(selected.getId());
+            } catch (IllegalArgumentException e) {
+                plugin.getLogger().warning("Invalid material for karma goal reward: " + selected.getId());
+                return;
+            }
+            ItemStack item = new ItemStack(material, selected.getMultiplier());
+            if (selected.getEnchantment() != null && selected.getEnchantmentLevel() != null) {
+                Enchantment ench = Enchantment.getByKey(org.bukkit.NamespacedKey.minecraft(selected.getEnchantment().toLowerCase()));
+                if (ench != null) {
+                    item.addUnsafeEnchantment(ench, selected.getEnchantmentLevel());
+                }
+            }
+            // Try to add to inventory, drop if full
+            if (player.getInventory().addItem(item).isEmpty()) {
+                player.sendMessage("§aReward added to your inventory!");
+            } else {
+                player.getWorld().dropItemNaturally(player.getLocation(), item);
+                player.sendMessage("§aReward dropped at your feet (inventory full)!");
+            }
+            // Custom message with reward details
+            String rewardMsg = goal.getMessage() + "  You've been given " + selected.getName() + (selected.getMultiplier() > 1 ? (" x" + selected.getMultiplier()) : "") + " for achieving " + goal.getThreshold() + " karma!";
+            player.sendMessage(rewardMsg);
         }
-        // Add more reward types here as needed (experience, money, etc.)
     }
 
     public void resetPlayerGoals(Player player) {
@@ -167,21 +199,53 @@ public class KarmaGoalManager implements Listener {
         private final String name;
         private final int threshold;
         private final String rewardType;
-        private final String rewardData;
+        private final List<RewardItem> rewardItems;
         private final String message;
 
-        public KarmaGoal(String name, int threshold, String rewardType, String rewardData, String message) {
+        public KarmaGoal(String name, int threshold, String rewardType, List<RewardItem> rewardItems, String message) {
             this.name = name;
             this.threshold = threshold;
             this.rewardType = rewardType;
-            this.rewardData = rewardData;
+            this.rewardItems = rewardItems;
             this.message = message;
         }
-
         public String getName() { return name; }
         public int getThreshold() { return threshold; }
         public String getRewardType() { return rewardType; }
-        public String getRewardData() { return rewardData; }
+        public List<RewardItem> getRewardItems() { return rewardItems; }
         public String getMessage() { return message; }
+    }
+    public static class RewardItem {
+        private final String id;
+        private final String name;
+        private final int multiplier;
+        private final double chance;
+        private final String enchantment;
+        private final Integer enchantmentLevel;
+        public RewardItem(String id, String name, int multiplier, double chance, String enchantment, Integer enchantmentLevel) {
+            this.id = id;
+            this.name = name;
+            this.multiplier = multiplier;
+            this.chance = chance;
+            this.enchantment = enchantment;
+            this.enchantmentLevel = enchantmentLevel;
+        }
+        public String getId() { return id; }
+        public String getName() { return name; }
+        public int getMultiplier() { return multiplier; }
+        public double getChance() { return chance; }
+        public String getEnchantment() { return enchantment; }
+        public Integer getEnchantmentLevel() { return enchantmentLevel; }
+    }
+    private RewardItem selectWeightedRandomReward(List<RewardItem> items) {
+        double total = 0.0;
+        for (RewardItem item : items) total += item.getChance();
+        double r = new Random().nextDouble() * total;
+        double cumulative = 0.0;
+        for (RewardItem item : items) {
+            cumulative += item.getChance();
+            if (r <= cumulative) return item;
+        }
+        return items.isEmpty() ? null : items.get(0);
     }
 } 
