@@ -9,6 +9,7 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerInteractEntityEvent;
 import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.event.entity.EntityDeathEvent;
+import org.bukkit.event.inventory.CraftItemEvent;
 import java.util.HashMap;
 import java.util.UUID;
 
@@ -68,6 +69,14 @@ public class PlayerStatsListener implements Listener {
             StatsManager.getInstance().addAnimalKill(killer);
         }
     }
+
+    @EventHandler
+    public void onCraftItem(CraftItemEvent event) {
+        if (event.getWhoClicked() instanceof Player) {
+            Player player = (Player) event.getWhoClicked();
+            StatsManager.getInstance().addItemCrafted(player);
+        }
+    }
     
     private void showStatsBoard(Player viewer, Player target) {
         StatsManager.PlayerStats stats = StatsManager.getInstance().getPlayerStats(target);
@@ -80,6 +89,7 @@ public class PlayerStatsListener implements Listener {
         viewer.sendMessage(ChatColor.DARK_GRAY + "│ " + ChatColor.RED + "● Deaths: " + ChatColor.WHITE + stats.getDeaths());
         viewer.sendMessage(ChatColor.DARK_GRAY + "│ " + ChatColor.AQUA + "● K/D Ratio: " + ChatColor.WHITE + String.format("%.2f", stats.getKDRatio()));
         viewer.sendMessage(ChatColor.DARK_GRAY + "│ " + ChatColor.LIGHT_PURPLE + "● Animals Killed: " + ChatColor.WHITE + stats.getAnimalsKilled());
+        viewer.sendMessage(ChatColor.DARK_GRAY + "│ " + ChatColor.GOLD + "● Items Crafted: " + ChatColor.WHITE + stats.getItemsCrafted());
         viewer.sendMessage(ChatColor.DARK_GRAY + "│");
         viewer.sendMessage(ChatColor.DARK_GRAY + "└─────────────────────────────────┘");
         viewer.sendMessage("");
