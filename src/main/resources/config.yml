@@ -1,0 +1,24 @@
+# AfterLife Plugin Configuration
+
+# Grave System Settings
+grave:
+  # Enable or disable the grave system (creates gravestones, caskets, and chests)
+  enabled: false
+
+# Afterlife System Settings
+afterlife:
+  # Enable or disable the afterlife system
+  enabled: true
+  
+  # Duration of afterlife ban in days (default: 7)
+  ban_duration_days: 7
+
+# Karma System Settings
+karma:
+  # Enable or disable the karma system
+  enabled: true
+
+# Stats System Settings
+stats:
+  # Enable or disable the stats system (shows kills/deaths when right-clicking players)
+  enabled: true 

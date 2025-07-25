@@ -2,6 +2,7 @@ package me.yodeling_goat.afterlifeplugin.afterlife.listeners;
 
 import me.yodeling_goat.afterlifeplugin.afterlife.AfterlifeManager;
 import me.yodeling_goat.afterlifeplugin.afterlife.handlers.InventoryHandler;
+import me.yodeling_goat.afterlifeplugin.AfterLifePlugin;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -15,6 +16,7 @@ public class PlayerDeathListener implements Listener {
         Player player = event.getEntity();
         InventoryHandler.getInstance().saveInventory(player);
         event.getDrops().clear(); // Prevent drops
+        
         if (!AfterlifeManager.isInAfterlife(player)) {
             AfterlifeManager.sendToAfterlife(player);
         }
