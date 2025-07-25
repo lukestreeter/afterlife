@@ -47,7 +47,8 @@ public class StatsManager {
                 int kills = statsConfig.getInt("players." + uuidString + ".kills", 0);
                 int deaths = statsConfig.getInt("players." + uuidString + ".deaths", 0);
                 int animalsKilled = statsConfig.getInt("players." + uuidString + ".animals_killed", 0);
-                playerStats.put(uuid, new PlayerStats(kills, deaths, animalsKilled));
+                int hostileMobsKilled = statsConfig.getInt("players." + uuidString + ".hostile_mobs_killed", 0);
+                playerStats.put(uuid, new PlayerStats(kills, deaths, animalsKilled, hostileMobsKilled));
             }
         }
     }
@@ -59,6 +60,7 @@ public class StatsManager {
             statsConfig.set("players." + uuidString + ".kills", stats.getKills());
             statsConfig.set("players." + uuidString + ".deaths", stats.getDeaths());
             statsConfig.set("players." + uuidString + ".animals_killed", stats.getAnimalsKilled());
+            statsConfig.set("players." + uuidString + ".hostile_mobs_killed", stats.getHostileMobsKilled());
         }
         
         try {
@@ -90,21 +92,37 @@ public class StatsManager {
         // Don't save immediately - will be saved on plugin disable
     }
     
+    public void addHostileMobKill(Player player) {
+        PlayerStats stats = getPlayerStats(player);
+        stats.addHostileMobKill();
+        // Don't save immediately - will be saved on plugin disable
+    }
+    
     public static class PlayerStats {
         private int kills;
         private int deaths;
         private int animalsKilled;
+        private int hostileMobsKilled;
         
         public PlayerStats(int kills, int deaths) {
             this.kills = kills;
             this.deaths = deaths;
             this.animalsKilled = 0;
+            this.hostileMobsKilled = 0;
         }
         
         public PlayerStats(int kills, int deaths, int animalsKilled) {
             this.kills = kills;
             this.deaths = deaths;
             this.animalsKilled = animalsKilled;
+            this.hostileMobsKilled = 0;
+        }
+        
+        public PlayerStats(int kills, int deaths, int animalsKilled, int hostileMobsKilled) {
+            this.kills = kills;
+            this.deaths = deaths;
+            this.animalsKilled = animalsKilled;
+            this.hostileMobsKilled = hostileMobsKilled;
         }
         
         public int getKills() {
@@ -117,6 +135,10 @@ public class StatsManager {
         
         public int getAnimalsKilled() {
             return animalsKilled;
+        }
+        
+        public int getHostileMobsKilled() {
+            return hostileMobsKilled;
         }
         
         public double getKDRatio() {
@@ -136,6 +158,10 @@ public class StatsManager {
         
         public void addAnimalKill() {
             animalsKilled++;
+        }
+        
+        public void addHostileMobKill() {
+            hostileMobsKilled++;
         }
     }
 } 
