@@ -14,6 +14,7 @@ import me.yodeling_goat.afterlifeplugin.karma.KarmaManager;
 import me.yodeling_goat.afterlifeplugin.afterlife.AfterlifeManager;
 import me.yodeling_goat.afterlifeplugin.afterlife.listeners.AfterlifeEffectsListener;
 import me.yodeling_goat.afterlifeplugin.afterlife.listeners.AfterlifeRestrictionListener;
+import me.yodeling_goat.afterlifeplugin.afterlife.listeners.AfterlifeMaintenanceListener;
 import me.yodeling_goat.afterlifeplugin.afterlife.listeners.PlayerDeathListener;
 import me.yodeling_goat.afterlifeplugin.afterlife.listeners.EntityDeathListener;
 
@@ -26,6 +27,9 @@ public class AfterLifePlugin extends JavaPlugin implements Listener {
     public void onEnable() {
         getLogger().info("AfterLifePlugin is starting up...");
         
+        // Initialize afterlife manager
+        AfterlifeManager.initialize();
+        
         // Register managers that implement Listener
         KarmaManager karmaManager = new KarmaManager();
         
@@ -35,6 +39,7 @@ public class AfterLifePlugin extends JavaPlugin implements Listener {
         // Register afterlife listeners
         Bukkit.getPluginManager().registerEvents(new AfterlifeEffectsListener(), this);
         Bukkit.getPluginManager().registerEvents(new AfterlifeRestrictionListener(), this);
+        Bukkit.getPluginManager().registerEvents(new AfterlifeMaintenanceListener(), this);
         Bukkit.getPluginManager().registerEvents(new PlayerDeathListener(), this);
         Bukkit.getPluginManager().registerEvents(new EntityDeathListener(), this);
 
@@ -43,6 +48,11 @@ public class AfterLifePlugin extends JavaPlugin implements Listener {
         
         // Register this plugin as a listener for player join events
         Bukkit.getPluginManager().registerEvents(this, this);
+        
+        // Schedule periodic cleanup of offline afterlife players (every 5 minutes)
+        Bukkit.getScheduler().runTaskTimer(this, () -> {
+            AfterlifeManager.cleanupOfflinePlayers();
+        }, 6000L, 6000L); // 6000 ticks = 5 minutes
         
         getLogger().info("AfterLifePlugin has been enabled!");
     }
@@ -57,6 +67,10 @@ public class AfterLifePlugin extends JavaPlugin implements Listener {
     @Override
     public void onDisable() {
         getLogger().info("AfterLifePlugin is shutting down...");
+        
+        // Save afterlife state before shutting down
+        AfterlifeManager.saveAfterlifeState();
+        
         getLogger().info("AfterLifePlugin has been disabled!");
     }
 }
