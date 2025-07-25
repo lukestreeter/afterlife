@@ -9,33 +9,99 @@ import org.bukkit.potion.PotionEffectType;
 import me.yodeling_goat.afterlifeplugin.afterlife.events.PlayerEnterAfterlifeEvent;
 import org.bukkit.Location;
 import me.yodeling_goat.afterlifeplugin.karma.KarmaManager;
+import org.bukkit.configuration.file.FileConfiguration;
+import org.bukkit.configuration.file.YamlConfiguration;
+import java.io.File;
+import java.io.IOException;
+import java.util.UUID;
 
 public class AfterlifeManager {
-    private static final Set<Player> afterlifePlayers = new HashSet<>();
+    private static final Set<UUID> afterlifePlayers = new HashSet<>();
+    private static File afterlifeFile;
+    private static FileConfiguration afterlifeConfig;
+    
+    public static void initialize() {
+        loadAfterlifeState();
+    }
+    
+    private static void loadAfterlifeState() {
+        afterlifeFile = new File(org.bukkit.Bukkit.getPluginManager().getPlugin("AfterLifePlugin").getDataFolder(), "afterlife.yml");
+        if (!afterlifeFile.exists()) {
+            try {
+                afterlifeFile.createNewFile();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+        afterlifeConfig = YamlConfiguration.loadConfiguration(afterlifeFile);
+        
+        // Load saved afterlife players
+        if (afterlifeConfig.contains("afterlife_players")) {
+            for (String uuidString : afterlifeConfig.getStringList("afterlife_players")) {
+                try {
+                    afterlifePlayers.add(UUID.fromString(uuidString));
+                } catch (IllegalArgumentException e) {
+                    // Skip invalid UUIDs
+                }
+            }
+        }
+    }
+    
+    public static void saveAfterlifeState() {
+        // Convert UUIDs to strings for saving
+        java.util.List<String> uuidStrings = new java.util.ArrayList<>();
+        for (UUID uuid : afterlifePlayers) {
+            uuidStrings.add(uuid.toString());
+        }
+        afterlifeConfig.set("afterlife_players", uuidStrings);
+        
+        try {
+            afterlifeConfig.save(afterlifeFile);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
 
     public static void sendToAfterlife(Player player) {
-        afterlifePlayers.add(player);
+        afterlifePlayers.add(player.getUniqueId());
+        saveAfterlifeState();
         Bukkit.getPluginManager().callEvent(new PlayerEnterAfterlifeEvent(player));
     }
 
     public static void removeFromAfterlife(Player player) {
-        afterlifePlayers.remove(player);
-        
+        afterlifePlayers.remove(player.getUniqueId());
+        saveAfterlifeState();
         removeAfterlifeEffects(player);
     }
 
     public static boolean isInAfterlife(Player player) {
-        return afterlifePlayers.contains(player);
+        return afterlifePlayers.contains(player.getUniqueId());
     }
 
     public static Set<Player> getAfterlifePlayers() {
-        return new HashSet<>(afterlifePlayers);
+        Set<Player> players = new HashSet<>();
+        for (UUID uuid : afterlifePlayers) {
+            Player player = Bukkit.getPlayer(uuid);
+            if (player != null) {
+                players.add(player);
+            }
+        }
+        return players;
     }
 
     public static void initializeAfterlifeState(Player player) {
         if (isInAfterlife(player)) {
             applyPermanentAfterlifeEffects(player);
+        } else {
+            // If player was in afterlife but server restarted, clear any lingering effects
+            removeAfterlifeEffects(player);
         }
+    }
+    
+    public static void cleanupOfflinePlayers() {
+        // Remove players who are no longer online from the afterlife set
+        afterlifePlayers.removeIf(uuid -> Bukkit.getPlayer(uuid) == null);
+        saveAfterlifeState();
     }
 
     public static void applyPermanentAfterlifeEffects(Player player) {
