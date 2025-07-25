@@ -9,8 +9,13 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerInteractEntityEvent;
 import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.event.entity.EntityDeathEvent;
+import java.util.HashMap;
+import java.util.UUID;
 
 public class PlayerStatsListener implements Listener {
+    
+    private final HashMap<UUID, Long> lastClickTime = new HashMap<>();
+    private static final long CLICK_COOLDOWN = 500; // 500ms cooldown
     
     @EventHandler
     public void onPlayerRightClick(PlayerInteractEntityEvent event) {
@@ -25,6 +30,19 @@ public class PlayerStatsListener implements Listener {
         
         Player clickedPlayer = (Player) event.getRightClicked();
         Player player = event.getPlayer();
+        
+        // Check cooldown to prevent double-triggering
+        long currentTime = System.currentTimeMillis();
+        Long lastClick = lastClickTime.get(player.getUniqueId());
+        if (lastClick != null && currentTime - lastClick < CLICK_COOLDOWN) {
+            return;
+        }
+        lastClickTime.put(player.getUniqueId(), currentTime);
+        
+        // Don't show stats for yourself
+        if (clickedPlayer.equals(player)) {
+            return;
+        }
         
         // Show stats board
         showStatsBoard(player, clickedPlayer);
@@ -54,17 +72,19 @@ public class PlayerStatsListener implements Listener {
     private void showStatsBoard(Player viewer, Player target) {
         StatsManager.PlayerStats stats = StatsManager.getInstance().getPlayerStats(target);
         
-        // Create a beautiful stats board
-        viewer.sendMessage(ChatColor.GOLD + "╔══════════════════════════════════════╗");
-        viewer.sendMessage(ChatColor.GOLD + "║" + ChatColor.YELLOW + "           " + target.getName() + "'s Stats" + ChatColor.GOLD + "           ║");
-        viewer.sendMessage(ChatColor.GOLD + "╠══════════════════════════════════════╣");
-        viewer.sendMessage(ChatColor.GOLD + "║" + ChatColor.GREEN + " Kills: " + ChatColor.WHITE + stats.getKills() + ChatColor.GOLD + "                              ║");
-        viewer.sendMessage(ChatColor.GOLD + "║" + ChatColor.RED + " Deaths: " + ChatColor.WHITE + stats.getDeaths() + ChatColor.GOLD + "                            ║");
-        viewer.sendMessage(ChatColor.GOLD + "║" + ChatColor.AQUA + " K/D Ratio: " + ChatColor.WHITE + String.format("%.2f", stats.getKDRatio()) + ChatColor.GOLD + "                        ║");
-        viewer.sendMessage(ChatColor.GOLD + "║" + ChatColor.LIGHT_PURPLE + " Animals Killed: " + ChatColor.WHITE + stats.getAnimalsKilled() + ChatColor.GOLD + "                    ║");
-        viewer.sendMessage(ChatColor.GOLD + "╚══════════════════════════════════════╝");
+        // Create a clean, modern stats board
+        viewer.sendMessage("");
+        viewer.sendMessage(ChatColor.DARK_GRAY + "┌─ " + ChatColor.GOLD + target.getName() + "'s Statistics" + ChatColor.DARK_GRAY + " ─┐");
+        viewer.sendMessage(ChatColor.DARK_GRAY + "│");
+        viewer.sendMessage(ChatColor.DARK_GRAY + "│ " + ChatColor.GREEN + "● Kills: " + ChatColor.WHITE + stats.getKills());
+        viewer.sendMessage(ChatColor.DARK_GRAY + "│ " + ChatColor.RED + "● Deaths: " + ChatColor.WHITE + stats.getDeaths());
+        viewer.sendMessage(ChatColor.DARK_GRAY + "│ " + ChatColor.AQUA + "● K/D Ratio: " + ChatColor.WHITE + String.format("%.2f", stats.getKDRatio()));
+        viewer.sendMessage(ChatColor.DARK_GRAY + "│ " + ChatColor.LIGHT_PURPLE + "● Animals Killed: " + ChatColor.WHITE + stats.getAnimalsKilled());
+        viewer.sendMessage(ChatColor.DARK_GRAY + "│");
+        viewer.sendMessage(ChatColor.DARK_GRAY + "└─────────────────────────────────┘");
+        viewer.sendMessage("");
         
-        // Play a sound effect
-        viewer.playSound(viewer.getLocation(), org.bukkit.Sound.BLOCK_NOTE_BLOCK_PLING, 1.0f, 2.0f);
+        // Play a subtle sound effect
+        viewer.playSound(viewer.getLocation(), org.bukkit.Sound.BLOCK_NOTE_BLOCK_PLING, 0.5f, 1.5f);
     }
 } 
