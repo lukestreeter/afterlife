@@ -10,6 +10,7 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerInteractEntityEvent;
 import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.event.entity.EntityDeathEvent;
+import org.bukkit.event.block.BlockBreakEvent;
 import java.util.HashMap;
 import java.util.UUID;
 
@@ -76,6 +77,17 @@ public class PlayerStatsListener implements Listener {
         }
     }
     
+    @EventHandler
+    public void onBlockBreak(BlockBreakEvent event) {
+        // Check if stats system is enabled
+        if (!org.bukkit.Bukkit.getPluginManager().getPlugin("AfterLifePlugin").getConfig().getBoolean("stats.enabled", true)) {
+            return;
+        }
+        
+        Player player = event.getPlayer();
+        StatsManager.getInstance().addBlockMined(player);
+    }
+    
     private void showStatsBoard(Player viewer, Player target) {
         StatsManager.PlayerStats stats = StatsManager.getInstance().getPlayerStats(target);
         
@@ -88,6 +100,7 @@ public class PlayerStatsListener implements Listener {
         viewer.sendMessage(ChatColor.DARK_GRAY + "│ " + ChatColor.AQUA + "● K/D Ratio: " + ChatColor.WHITE + String.format("%.2f", stats.getKDRatio()));
         viewer.sendMessage(ChatColor.DARK_GRAY + "│ " + ChatColor.LIGHT_PURPLE + "● Animals Killed: " + ChatColor.WHITE + stats.getAnimalsKilled());
         viewer.sendMessage(ChatColor.DARK_GRAY + "│ " + ChatColor.DARK_RED + "● Hostile Mobs Killed: " + ChatColor.WHITE + stats.getHostileMobsKilled());
+        viewer.sendMessage(ChatColor.DARK_GRAY + "│ " + ChatColor.GOLD + "● Blocks Mined: " + ChatColor.WHITE + stats.getBlocksMined());
         viewer.sendMessage(ChatColor.DARK_GRAY + "│");
         viewer.sendMessage(ChatColor.DARK_GRAY + "└─────────────────────────────────┘");
         viewer.sendMessage("");
