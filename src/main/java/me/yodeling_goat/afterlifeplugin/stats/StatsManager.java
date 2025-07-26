@@ -47,7 +47,9 @@ public class StatsManager {
                 int kills = statsConfig.getInt("players." + uuidString + ".kills", 0);
                 int deaths = statsConfig.getInt("players." + uuidString + ".deaths", 0);
                 int animalsKilled = statsConfig.getInt("players." + uuidString + ".animals_killed", 0);
-                playerStats.put(uuid, new PlayerStats(kills, deaths, animalsKilled));
+                int hostileMobsKilled = statsConfig.getInt("players." + uuidString + ".hostile_mobs_killed", 0);
+                int blocksMined = statsConfig.getInt("players." + uuidString + ".blocks_mined", 0);
+                playerStats.put(uuid, new PlayerStats(kills, deaths, animalsKilled, hostileMobsKilled, blocksMined));
             }
         }
     }
@@ -59,6 +61,8 @@ public class StatsManager {
             statsConfig.set("players." + uuidString + ".kills", stats.getKills());
             statsConfig.set("players." + uuidString + ".deaths", stats.getDeaths());
             statsConfig.set("players." + uuidString + ".animals_killed", stats.getAnimalsKilled());
+            statsConfig.set("players." + uuidString + ".hostile_mobs_killed", stats.getHostileMobsKilled());
+            statsConfig.set("players." + uuidString + ".blocks_mined", stats.getBlocksMined());
         }
         
         try {
@@ -90,21 +94,55 @@ public class StatsManager {
         // Don't save immediately - will be saved on plugin disable
     }
     
+    public void addHostileMobKill(Player player) {
+        PlayerStats stats = getPlayerStats(player);
+        stats.addHostileMobKill();
+        // Don't save immediately - will be saved on plugin disable
+    }
+    
+    public void addBlockMined(Player player) {
+        PlayerStats stats = getPlayerStats(player);
+        stats.addBlockMined();
+        // Don't save immediately - will be saved on plugin disable
+    }
+    
     public static class PlayerStats {
         private int kills;
         private int deaths;
         private int animalsKilled;
+        private int hostileMobsKilled;
+        private int blocksMined;
         
         public PlayerStats(int kills, int deaths) {
             this.kills = kills;
             this.deaths = deaths;
             this.animalsKilled = 0;
+            this.hostileMobsKilled = 0;
+            this.blocksMined = 0;
         }
         
         public PlayerStats(int kills, int deaths, int animalsKilled) {
             this.kills = kills;
             this.deaths = deaths;
             this.animalsKilled = animalsKilled;
+            this.hostileMobsKilled = 0;
+            this.blocksMined = 0;
+        }
+        
+        public PlayerStats(int kills, int deaths, int animalsKilled, int hostileMobsKilled) {
+            this.kills = kills;
+            this.deaths = deaths;
+            this.animalsKilled = animalsKilled;
+            this.hostileMobsKilled = hostileMobsKilled;
+            this.blocksMined = 0;
+        }
+        
+        public PlayerStats(int kills, int deaths, int animalsKilled, int hostileMobsKilled, int blocksMined) {
+            this.kills = kills;
+            this.deaths = deaths;
+            this.animalsKilled = animalsKilled;
+            this.hostileMobsKilled = hostileMobsKilled;
+            this.blocksMined = blocksMined;
         }
         
         public int getKills() {
@@ -117,6 +155,14 @@ public class StatsManager {
         
         public int getAnimalsKilled() {
             return animalsKilled;
+        }
+        
+        public int getHostileMobsKilled() {
+            return hostileMobsKilled;
+        }
+        
+        public int getBlocksMined() {
+            return blocksMined;
         }
         
         public double getKDRatio() {
@@ -136,6 +182,14 @@ public class StatsManager {
         
         public void addAnimalKill() {
             animalsKilled++;
+        }
+        
+        public void addHostileMobKill() {
+            hostileMobsKilled++;
+        }
+        
+        public void addBlockMined() {
+            blocksMined++;
         }
     }
 } 

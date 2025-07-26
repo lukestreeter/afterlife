@@ -7,6 +7,7 @@ import org.bukkit.event.player.PlayerMoveEvent;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.player.PlayerToggleFlightEvent;
 import org.bukkit.event.player.PlayerToggleSneakEvent;
+import org.bukkit.event.player.PlayerQuitEvent;
 import me.yodeling_goat.afterlifeplugin.afterlife.AfterlifeManager;
 
 public class AfterlifeMaintenanceListener implements Listener {
@@ -63,6 +64,17 @@ public class AfterlifeMaintenanceListener implements Listener {
             event.setCancelled(true);
             attacker.sendMessage("§cYou cannot attack players in the afterlife!");
             return;
+        }
+    }
+    
+    @EventHandler
+    public void onPlayerQuit(PlayerQuitEvent event) {
+        Player player = event.getPlayer();
+        
+        // If player was in afterlife, clean up their effects but keep them in the afterlife state
+        // This allows them to return to afterlife when they rejoin
+        if (AfterlifeManager.isInAfterlife(player)) {
+            AfterlifeManager.removeAfterlifeEffects(player);
         }
     }
 } 
