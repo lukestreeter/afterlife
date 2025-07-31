@@ -40,14 +40,24 @@ public class StatsManager {
         loadPlayerStats();
     }
     
+    private int getPlayerStat(String playerUuid, String stat) {
+        return statsConfig.getInt("players." + playerUuid + "." + stat, 0);
+    }
+
+    private void setPlayerStat(String playerUuid, String stat, int value) {
+        statsConfig.set("players." + playerUuid + "." + stat, value);
+    }
+
     private void loadPlayerStats() {
         if (statsConfig.contains("players")) {
             for (String uuidString : statsConfig.getConfigurationSection("players").getKeys(false)) {
                 UUID uuid = UUID.fromString(uuidString);
-                int kills = statsConfig.getInt("players." + uuidString + ".kills", 0);
-                int deaths = statsConfig.getInt("players." + uuidString + ".deaths", 0);
-                int animalsKilled = statsConfig.getInt("players." + uuidString + ".animals_killed", 0);
-                playerStats.put(uuid, new PlayerStats(kills, deaths, animalsKilled));
+                int kills = getPlayerStat(uuidString, "kills");
+                int deaths = getPlayerStat(uuidString, "deaths");
+                int animalsKilled = getPlayerStat(uuidString, "animals_killed");
+                int itemsCrafted = getPlayerStat(uuidString, "items_crafted");
+                int xpCollected = getPlayerStat(uuidString, "xp_collected");
+                playerStats.put(uuid, new PlayerStats(kills, deaths, animalsKilled, itemsCrafted, xpCollected));
             }
         }
     }
@@ -56,9 +66,11 @@ public class StatsManager {
         for (Map.Entry<UUID, PlayerStats> entry : playerStats.entrySet()) {
             String uuidString = entry.getKey().toString();
             PlayerStats stats = entry.getValue();
-            statsConfig.set("players." + uuidString + ".kills", stats.getKills());
-            statsConfig.set("players." + uuidString + ".deaths", stats.getDeaths());
-            statsConfig.set("players." + uuidString + ".animals_killed", stats.getAnimalsKilled());
+            setPlayerStat(uuidString, "kills", stats.getKills());
+            setPlayerStat(uuidString, "deaths", stats.getDeaths());
+            setPlayerStat(uuidString, "animals_killed", stats.getAnimalsKilled());
+            setPlayerStat(uuidString, "items_crafted", stats.getItemsCrafted());
+            setPlayerStat(uuidString, "xp_collected", stats.getXpCollected());
         }
         
         try {
@@ -89,22 +101,56 @@ public class StatsManager {
         stats.addAnimalKill();
         // Don't save immediately - will be saved on plugin disable
     }
+
+    public void addItemCrafted(Player player) {
+        PlayerStats stats = getPlayerStats(player);
+        stats.addItemCrafted();
+        // Don't save immediately - will be saved on plugin disable
+    }
+    
+    public void addXpCollected(Player player, int xpAmount) {
+        PlayerStats stats = getPlayerStats(player);
+        stats.addXpCollected(xpAmount);
+        // Don't save immediately - will be saved on plugin disable
+    }
     
     public static class PlayerStats {
         private int kills;
         private int deaths;
         private int animalsKilled;
+        private int itemsCrafted;
+        private int xpCollected;
         
         public PlayerStats(int kills, int deaths) {
             this.kills = kills;
             this.deaths = deaths;
             this.animalsKilled = 0;
+            this.itemsCrafted = 0;
+            this.xpCollected = 0;
         }
         
         public PlayerStats(int kills, int deaths, int animalsKilled) {
             this.kills = kills;
             this.deaths = deaths;
             this.animalsKilled = animalsKilled;
+            this.itemsCrafted = 0;
+            this.xpCollected = 0;
+        }
+        
+        public PlayerStats(int kills, int deaths, int animalsKilled, int itemsCrafted) {
+            this.kills = kills;
+            this.deaths = deaths;
+            this.animalsKilled = animalsKilled;
+            this.itemsCrafted = itemsCrafted;
+            this.xpCollected = 0;
+        }
+        
+        public PlayerStats(int kills, int deaths, int animalsKilled, int itemsCrafted, int xpCollected) {
+            this.kills = kills;
+            this.deaths = deaths;
+            this.animalsKilled = animalsKilled;
+            this.itemsCrafted = itemsCrafted;
+            this.xpCollected = xpCollected;
         }
         
         public int getKills() {
@@ -117,6 +163,14 @@ public class StatsManager {
         
         public int getAnimalsKilled() {
             return animalsKilled;
+        }
+        
+        public int getItemsCrafted() {
+            return itemsCrafted;
+        }
+        
+        public int getXpCollected() {
+            return xpCollected;
         }
         
         public double getKDRatio() {
@@ -136,6 +190,14 @@ public class StatsManager {
         
         public void addAnimalKill() {
             animalsKilled++;
+        }
+
+        public void addItemCrafted() {
+            itemsCrafted++;
+        }
+
+        public void addXpCollected(int amount) {
+            xpCollected += amount;
         }
     }
 } 
