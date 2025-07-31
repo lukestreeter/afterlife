@@ -73,8 +73,8 @@ public class StatsManager {
             setPlayerStat(uuidString, "animals_killed", stats.getAnimalsKilled());
             setPlayerStat(uuidString, "items_crafted", stats.getItemsCrafted());
             setPlayerStat(uuidString, "xp_collected", stats.getXpCollected());
-            setPlayerStat(uuidString, "hostile_mobs_killed", stats.getXpCollected());
-            setPlayerStat(uuidString, "blocks_mined", stats.getXpCollected());
+            setPlayerStat(uuidString, "hostile_mobs_killed", stats.getHostileMobsKilled());
+            setPlayerStat(uuidString, "blocks_mined", stats.getBlocksMined());
         }
         
         try {
@@ -144,7 +144,6 @@ public class StatsManager {
             this.deaths = deaths;
             this.animalsKilled = animalsKilled;
             this.hostileMobsKilled = hostileMobsKilled;
-            this.blocksMined = 0;
             this.itemsCrafted = itemsCrafted;
             this.xpCollected = xpCollected;
             this.blocksMined = blocksMined;
