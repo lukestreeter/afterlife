@@ -57,7 +57,9 @@ public class StatsManager {
                 int animalsKilled = getPlayerStat(uuidString, "animals_killed");
                 int itemsCrafted = getPlayerStat(uuidString, "items_crafted");
                 int xpCollected = getPlayerStat(uuidString, "xp_collected");
-                playerStats.put(uuid, new PlayerStats(kills, deaths, animalsKilled, itemsCrafted, xpCollected));
+                int hostileMobsKilled = getPlayerStat(uuidString, "hostile_mobs_killed");
+                int blocksMined = getPlayerStat(uuidString, "blocks_mined");
+                playerStats.put(uuid, new PlayerStats(kills, deaths, animalsKilled, itemsCrafted, xpCollected, hostileMobsKilled, blocksMined));
             }
         }
     }
@@ -71,6 +73,8 @@ public class StatsManager {
             setPlayerStat(uuidString, "animals_killed", stats.getAnimalsKilled());
             setPlayerStat(uuidString, "items_crafted", stats.getItemsCrafted());
             setPlayerStat(uuidString, "xp_collected", stats.getXpCollected());
+            setPlayerStat(uuidString, "hostile_mobs_killed", stats.getHostileMobsKilled());
+            setPlayerStat(uuidString, "blocks_mined", stats.getBlocksMined());
         }
         
         try {
@@ -81,7 +85,7 @@ public class StatsManager {
     }
     
     public PlayerStats getPlayerStats(Player player) {
-        return playerStats.computeIfAbsent(player.getUniqueId(), k -> new PlayerStats(0, 0));
+        return playerStats.computeIfAbsent(player.getUniqueId(), k -> new PlayerStats(0, 0, 0, 0, 0, 0, 0));
     }
     
     public void addKill(Player player) {
@@ -107,50 +111,42 @@ public class StatsManager {
         stats.addItemCrafted();
         // Don't save immediately - will be saved on plugin disable
     }
-    
+
     public void addXpCollected(Player player, int xpAmount) {
         PlayerStats stats = getPlayerStats(player);
         stats.addXpCollected(xpAmount);
         // Don't save immediately - will be saved on plugin disable
     }
-    
+
+    public void addHostileMobKill(Player player) {
+        PlayerStats stats = getPlayerStats(player);
+        stats.addHostileMobKill();
+        // Don't save immediately - will be saved on plugin disable
+    }
+
+    public void addBlockMined(Player player) {
+        PlayerStats stats = getPlayerStats(player);
+        stats.addBlockMined();
+        // Don't save immediately - will be saved on plugin disable
+    }
+
     public static class PlayerStats {
         private int kills;
         private int deaths;
         private int animalsKilled;
         private int itemsCrafted;
         private int xpCollected;
-        
-        public PlayerStats(int kills, int deaths) {
-            this.kills = kills;
-            this.deaths = deaths;
-            this.animalsKilled = 0;
-            this.itemsCrafted = 0;
-            this.xpCollected = 0;
-        }
-        
-        public PlayerStats(int kills, int deaths, int animalsKilled) {
+        private int hostileMobsKilled;
+        private int blocksMined;
+
+        public PlayerStats(int kills, int deaths, int animalsKilled, int hostileMobsKilled, int itemsCrafted, int xpCollected, int blocksMined) {
             this.kills = kills;
             this.deaths = deaths;
             this.animalsKilled = animalsKilled;
-            this.itemsCrafted = 0;
-            this.xpCollected = 0;
-        }
-        
-        public PlayerStats(int kills, int deaths, int animalsKilled, int itemsCrafted) {
-            this.kills = kills;
-            this.deaths = deaths;
-            this.animalsKilled = animalsKilled;
-            this.itemsCrafted = itemsCrafted;
-            this.xpCollected = 0;
-        }
-        
-        public PlayerStats(int kills, int deaths, int animalsKilled, int itemsCrafted, int xpCollected) {
-            this.kills = kills;
-            this.deaths = deaths;
-            this.animalsKilled = animalsKilled;
+            this.hostileMobsKilled = hostileMobsKilled;
             this.itemsCrafted = itemsCrafted;
             this.xpCollected = xpCollected;
+            this.blocksMined = blocksMined;
         }
         
         public int getKills() {
@@ -165,14 +161,22 @@ public class StatsManager {
             return animalsKilled;
         }
         
+        public int getHostileMobsKilled() {
+            return hostileMobsKilled;
+        }
+
+        public int getBlocksMined() {
+            return blocksMined;
+        }
+
         public int getItemsCrafted() {
             return itemsCrafted;
         }
-        
+
         public int getXpCollected() {
             return xpCollected;
         }
-        
+
         public double getKDRatio() {
             if (deaths == 0) {
                 return kills;
@@ -198,6 +202,14 @@ public class StatsManager {
 
         public void addXpCollected(int amount) {
             xpCollected += amount;
+        }
+
+        public void addHostileMobKill() {
+            hostileMobsKilled++;
+        }
+
+        public void addBlockMined() {
+            blocksMined++;
         }
     }
 } 

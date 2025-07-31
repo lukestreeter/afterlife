@@ -40,6 +40,9 @@ public class AfterLifePlugin extends JavaPlugin implements Listener {
         saveDefaultConfig();
         getLogger().info("AfterLifePlugin is starting up...");
         
+        // Initialize afterlife manager
+        AfterlifeManager.initialize();
+        
         // Register managers that implement Listener
         KarmaManager karmaManager = new KarmaManager();
         
@@ -62,6 +65,11 @@ public class AfterLifePlugin extends JavaPlugin implements Listener {
         // Register this plugin as a listener for player join events
         Bukkit.getPluginManager().registerEvents(this, this);
         
+        // Schedule periodic cleanup of offline afterlife players (every 5 minutes)
+        Bukkit.getScheduler().runTaskTimer(this, () -> {
+            AfterlifeManager.cleanupOfflinePlayers();
+        }, 6000L, 6000L); // 6000 ticks = 5 minutes
+        
         getLogger().info("AfterLifePlugin has been enabled!");
     }
     
@@ -75,6 +83,9 @@ public class AfterLifePlugin extends JavaPlugin implements Listener {
     @Override
     public void onDisable() {
         getLogger().info("AfterLifePlugin is shutting down...");
+        
+        // Save afterlife state before shutting down
+        AfterlifeManager.saveAfterlifeState();
         
         // Save all stats before shutting down
         StatsManager.getInstance().saveStats();
