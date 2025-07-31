@@ -27,7 +27,7 @@ start-server: deploy
     fi
     cd dev-server && java -Xms2G -Xmx4G -jar paper.jar nogui
 
-# Test commands
+# Test command
 test test_class="":
     #!/usr/bin/env bash
     echo "Usage: just test [test_class]"
