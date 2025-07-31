@@ -12,6 +12,7 @@ import org.bukkit.boss.BarStyle;
 import java.util.HashMap;
 import me.yodeling_goat.afterlifeplugin.karma.events.KarmaChangeEvent;
 import me.yodeling_goat.afterlifeplugin.karma.events.KarmaChangeRequestEvent;
+import me.yodeling_goat.afterlifeplugin.afterlife.AfterlifeManager;
 
 public class KarmaManager implements Listener {
     private static final HashMap<String, Integer> playerKarma = new HashMap<>();
@@ -32,6 +33,13 @@ public class KarmaManager implements Listener {
         if (event.isCancelled()) return;
         
         Player player = event.getPlayer();
+        
+        // Don't allow karma changes for players in the afterlife
+        if (AfterlifeManager.isInAfterlife(player)) {
+            event.setCancelled(true);
+            return;
+        }
+        
         int karmaDelta = event.getKarmaDelta();
         int currentKarma = getKarma(player);
         int newKarma = Math.max(1, Math.min(100, currentKarma + karmaDelta));
@@ -71,26 +79,10 @@ public class KarmaManager implements Listener {
         player.removePotionEffect(PotionEffectType.FAST_DIGGING);
         player.removePotionEffect(PotionEffectType.INCREASE_DAMAGE);
         player.removePotionEffect(PotionEffectType.HEALTH_BOOST);
-        // Effects
-        if (karma >= 1 && karma <= 5) {
-            player.setHealth(0.0);
-        } else if (karma > 5 && karma <= 10) {
-            player.addPotionEffect(new PotionEffect(PotionEffectType.SLOW, Integer.MAX_VALUE, 4, true, false));
-            player.addPotionEffect(new PotionEffect(PotionEffectType.POISON, Integer.MAX_VALUE, 1, true, false));
-            player.addPotionEffect(new PotionEffect(PotionEffectType.WEAKNESS, Integer.MAX_VALUE, 3, true, false));
-            player.addPotionEffect(new PotionEffect(PotionEffectType.HUNGER, Integer.MAX_VALUE, 5, true, false));
-        } else if (karma > 10 && karma <= 20) {
-            player.addPotionEffect(new PotionEffect(PotionEffectType.SLOW, Integer.MAX_VALUE, 4, true, false));
-            player.addPotionEffect(new PotionEffect(PotionEffectType.WEAKNESS, Integer.MAX_VALUE, 3, true, false));
-            player.addPotionEffect(new PotionEffect(PotionEffectType.HUNGER, Integer.MAX_VALUE, 5, true, false));
-        } else if (karma > 20 && karma <= 30) {
-            player.addPotionEffect(new PotionEffect(PotionEffectType.SLOW, Integer.MAX_VALUE, 4, true, false));
-            player.addPotionEffect(new PotionEffect(PotionEffectType.WEAKNESS, Integer.MAX_VALUE, 3, true, false));
-        } else if (karma > 30 && karma <= 40) {
-            player.addPotionEffect(new PotionEffect(PotionEffectType.SLOW, Integer.MAX_VALUE, 4, true, false));
-        } else if (karma > 40 && karma <= 50) {
-            // No effects
-        } else if (karma > 50 && karma <= 60) {
+        
+        // Only apply positive effects for good karma (50+)
+        // No negative effects for bad karma (1-49)
+        if (karma > 50 && karma <= 60) {
             player.addPotionEffect(new PotionEffect(PotionEffectType.ABSORPTION, Integer.MAX_VALUE, 4, true, false));
         } else if (karma > 60 && karma <= 70) {
             player.addPotionEffect(new PotionEffect(PotionEffectType.ABSORPTION, Integer.MAX_VALUE, 4, true, false));
@@ -118,6 +110,7 @@ public class KarmaManager implements Listener {
             player.addPotionEffect(new PotionEffect(PotionEffectType.INCREASE_DAMAGE, Integer.MAX_VALUE, 3, true, false));
             player.addPotionEffect(new PotionEffect(PotionEffectType.HEALTH_BOOST, Integer.MAX_VALUE, 9, true, false));
         }
+        // For karma 1-50: No effects (neutral)
     }
 
     public static void updateKarmaDisplay(Player player, int karma) {
@@ -149,6 +142,11 @@ public class KarmaManager implements Listener {
     }
 
     public static void initializeKarmaDisplay(Player player) {
+        // Don't show karma display for players in the afterlife
+        if (AfterlifeManager.isInAfterlife(player)) {
+            return;
+        }
+        
         int karma = getKarma(player);
         updateKarmaDisplay(player, karma);
     }

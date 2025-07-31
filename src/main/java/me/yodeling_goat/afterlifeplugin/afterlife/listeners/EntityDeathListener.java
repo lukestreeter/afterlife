@@ -8,6 +8,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.entity.EntityType;
 import org.bukkit.Bukkit;
 import me.yodeling_goat.afterlifeplugin.karma.events.KarmaChangeRequestEvent;
+import me.yodeling_goat.afterlifeplugin.afterlife.AfterlifeManager;
 
 public class EntityDeathListener implements Listener {
     @EventHandler
@@ -15,6 +16,11 @@ public class EntityDeathListener implements Listener {
         LivingEntity entity = event.getEntity();
         Player killer = entity.getKiller();
         if (killer == null) return;
+        
+        // Don't allow karma changes for players in the afterlife
+        if (AfterlifeManager.isInAfterlife(killer)) {
+            return;
+        }
         int karmaChange = 0;
         EntityType type = entity.getType();
         switch (type) {
