@@ -16,6 +16,7 @@ import me.yodeling_goat.afterlifeplugin.afterlife.events.PlayerEnterAfterlifeEve
 import me.yodeling_goat.afterlifeplugin.afterlife.AfterlifeManager;
 
 public class AfterlifeRestrictionListener implements Listener {
+    
     @EventHandler
     public void onBlockBreak(BlockBreakEvent event) {
         if (AfterlifeManager.isInAfterlife(event.getPlayer())) {
