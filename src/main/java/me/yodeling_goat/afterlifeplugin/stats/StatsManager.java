@@ -49,7 +49,10 @@ public class StatsManager {
                 int animalsKilled = statsConfig.getInt("players." + uuidString + ".animals_killed", 0);
                 int hostileMobsKilled = statsConfig.getInt("players." + uuidString + ".hostile_mobs_killed", 0);
                 int blocksMined = statsConfig.getInt("players." + uuidString + ".blocks_mined", 0);
-                playerStats.put(uuid, new PlayerStats(kills, deaths, animalsKilled, hostileMobsKilled, blocksMined));
+                int wardenKilled = statsConfig.getInt("players." + uuidString + ".warden_killed", 0);
+                int enderDragonKilled = statsConfig.getInt("players." + uuidString + ".ender_dragon_killed", 0);
+                int witherKilled = statsConfig.getInt("players." + uuidString + ".wither_killed", 0);
+                playerStats.put(uuid, new PlayerStats(kills, deaths, animalsKilled, hostileMobsKilled, blocksMined, wardenKilled, enderDragonKilled, witherKilled));
             }
         }
     }
@@ -63,6 +66,9 @@ public class StatsManager {
             statsConfig.set("players." + uuidString + ".animals_killed", stats.getAnimalsKilled());
             statsConfig.set("players." + uuidString + ".hostile_mobs_killed", stats.getHostileMobsKilled());
             statsConfig.set("players." + uuidString + ".blocks_mined", stats.getBlocksMined());
+            statsConfig.set("players." + uuidString + ".warden_killed", stats.getWardenKilled());
+            statsConfig.set("players." + uuidString + ".ender_dragon_killed", stats.getEnderDragonKilled());
+            statsConfig.set("players." + uuidString + ".wither_killed", stats.getWitherKilled());
         }
         
         try {
@@ -106,12 +112,48 @@ public class StatsManager {
         // Don't save immediately - will be saved on plugin disable
     }
     
+    public void addWardenKill(Player player) {
+        PlayerStats stats = getPlayerStats(player);
+        stats.addWardenKill();
+        // Don't save immediately - will be saved on plugin disable
+    }
+    
+    public void addEnderDragonKill(Player player) {
+        PlayerStats stats = getPlayerStats(player);
+        stats.addEnderDragonKill();
+        // Don't save immediately - will be saved on plugin disable
+    }
+    
+    public void addWitherKill(Player player) {
+        PlayerStats stats = getPlayerStats(player);
+        stats.addWitherKill();
+        // Don't save immediately - will be saved on plugin disable
+    }
+    
+    public void resetPlayerStats(Player player) {
+        playerStats.put(player.getUniqueId(), new PlayerStats(0, 0));
+        saveStats();
+    }
+    
+    public void clearPlayerStats(Player player) {
+        playerStats.remove(player.getUniqueId());
+        saveStats();
+    }
+    
+    public void clearAllStats() {
+        playerStats.clear();
+        saveStats();
+    }
+    
     public static class PlayerStats {
         private int kills;
         private int deaths;
         private int animalsKilled;
         private int hostileMobsKilled;
         private int blocksMined;
+        private int wardenKilled;
+        private int enderDragonKilled;
+        private int witherKilled;
         
         public PlayerStats(int kills, int deaths) {
             this.kills = kills;
@@ -119,6 +161,9 @@ public class StatsManager {
             this.animalsKilled = 0;
             this.hostileMobsKilled = 0;
             this.blocksMined = 0;
+            this.wardenKilled = 0;
+            this.enderDragonKilled = 0;
+            this.witherKilled = 0;
         }
         
         public PlayerStats(int kills, int deaths, int animalsKilled) {
@@ -127,6 +172,9 @@ public class StatsManager {
             this.animalsKilled = animalsKilled;
             this.hostileMobsKilled = 0;
             this.blocksMined = 0;
+            this.wardenKilled = 0;
+            this.enderDragonKilled = 0;
+            this.witherKilled = 0;
         }
         
         public PlayerStats(int kills, int deaths, int animalsKilled, int hostileMobsKilled) {
@@ -135,6 +183,9 @@ public class StatsManager {
             this.animalsKilled = animalsKilled;
             this.hostileMobsKilled = hostileMobsKilled;
             this.blocksMined = 0;
+            this.wardenKilled = 0;
+            this.enderDragonKilled = 0;
+            this.witherKilled = 0;
         }
         
         public PlayerStats(int kills, int deaths, int animalsKilled, int hostileMobsKilled, int blocksMined) {
@@ -143,6 +194,20 @@ public class StatsManager {
             this.animalsKilled = animalsKilled;
             this.hostileMobsKilled = hostileMobsKilled;
             this.blocksMined = blocksMined;
+            this.wardenKilled = 0;
+            this.enderDragonKilled = 0;
+            this.witherKilled = 0;
+        }
+        
+        public PlayerStats(int kills, int deaths, int animalsKilled, int hostileMobsKilled, int blocksMined, int wardenKilled, int enderDragonKilled, int witherKilled) {
+            this.kills = kills;
+            this.deaths = deaths;
+            this.animalsKilled = animalsKilled;
+            this.hostileMobsKilled = hostileMobsKilled;
+            this.blocksMined = blocksMined;
+            this.wardenKilled = wardenKilled;
+            this.enderDragonKilled = enderDragonKilled;
+            this.witherKilled = witherKilled;
         }
         
         public int getKills() {
@@ -163,6 +228,18 @@ public class StatsManager {
         
         public int getBlocksMined() {
             return blocksMined;
+        }
+        
+        public int getWardenKilled() {
+            return wardenKilled;
+        }
+        
+        public int getEnderDragonKilled() {
+            return enderDragonKilled;
+        }
+        
+        public int getWitherKilled() {
+            return witherKilled;
         }
         
         public double getKDRatio() {
@@ -190,6 +267,18 @@ public class StatsManager {
         
         public void addBlockMined() {
             blocksMined++;
+        }
+        
+        public void addWardenKill() {
+            wardenKilled++;
+        }
+        
+        public void addEnderDragonKill() {
+            enderDragonKilled++;
+        }
+        
+        public void addWitherKill() {
+            witherKilled++;
         }
     }
 } 

@@ -21,6 +21,7 @@ import me.yodeling_goat.afterlifeplugin.afterlife.listeners.EntityDeathListener;
 // Stats system
 import me.yodeling_goat.afterlifeplugin.stats.StatsManager;
 import me.yodeling_goat.afterlifeplugin.stats.listeners.PlayerStatsListener;
+import me.yodeling_goat.afterlifeplugin.stats.listeners.BossKillListener;
 
 // Grave system
 import me.yodeling_goat.afterlifeplugin.grave.listeners.PlayerEnteredAfterlifeListener;
@@ -58,6 +59,7 @@ public class AfterLifePlugin extends JavaPlugin implements Listener {
 
         // Register stats listeners
         Bukkit.getPluginManager().registerEvents(new PlayerStatsListener(), this);
+        Bukkit.getPluginManager().registerEvents(new BossKillListener(), this);
 
         // Register grave listeners
         Bukkit.getPluginManager().registerEvents(new PlayerEnteredAfterlifeListener(), this);
@@ -73,13 +75,6 @@ public class AfterLifePlugin extends JavaPlugin implements Listener {
         getLogger().info("AfterLifePlugin has been enabled!");
     }
     
-    @EventHandler
-    public void onPlayerJoin(PlayerJoinEvent event) {
-        Player player = event.getPlayer();
-        KarmaManager.initializeKarmaDisplay(player);
-        AfterlifeManager.initializeAfterlifeState(player);
-    }
-    
     @Override
     public void onDisable() {
         getLogger().info("AfterLifePlugin is shutting down...");
@@ -91,5 +86,12 @@ public class AfterLifePlugin extends JavaPlugin implements Listener {
         StatsManager.getInstance().saveStats();
         
         getLogger().info("AfterLifePlugin has been disabled!");
+    }
+    
+    @EventHandler
+    public void onPlayerJoin(PlayerJoinEvent event) {
+        Player player = event.getPlayer();
+        KarmaManager.initializeKarmaDisplay(player);
+        AfterlifeManager.initializeAfterlifeState(player);
     }
 }
