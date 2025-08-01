@@ -10,6 +10,8 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerInteractEntityEvent;
 import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.event.entity.EntityDeathEvent;
+import org.bukkit.event.inventory.CraftItemEvent;
+import org.bukkit.event.player.PlayerExpChangeEvent;
 import org.bukkit.event.block.BlockBreakEvent;
 import java.util.HashMap;
 import java.util.UUID;
@@ -69,25 +71,61 @@ public class PlayerStatsListener implements Listener {
             Player killer = event.getEntity().getKiller();
             StatsManager.getInstance().addAnimalKill(killer);
         }
-        
+
         // Check if a hostile mob was killed by a player
         if (event.getEntity() instanceof Monster && event.getEntity().getKiller() instanceof Player) {
             Player killer = event.getEntity().getKiller();
             StatsManager.getInstance().addHostileMobKill(killer);
         }
     }
-    
+
     @EventHandler
     public void onBlockBreak(BlockBreakEvent event) {
         // Check if stats system is enabled
         if (!org.bukkit.Bukkit.getPluginManager().getPlugin("AfterLifePlugin").getConfig().getBoolean("stats.enabled", true)) {
             return;
         }
-        
+
         Player player = event.getPlayer();
         StatsManager.getInstance().addBlockMined(player);
     }
-    
+
+    @EventHandler
+    public void onCraftItem(CraftItemEvent event) {
+        if (event.getWhoClicked() instanceof Player) {
+            Player player = (Player) event.getWhoClicked();
+            StatsManager.getInstance().addItemCrafted(player);
+        }
+    }
+
+    @EventHandler
+    public void onPlayerExpChange(PlayerExpChangeEvent event) {
+        int xpGained = event.getAmount();
+        if (xpGained > 0) {
+            StatsManager.getInstance().addXpCollected(event.getPlayer(), xpGained);
+        }
+    }
+
+    private String applyLimeGreenPattern(String text) {
+        StringBuilder result = new StringBuilder();
+        boolean useYellow = true;
+
+        for (char c : text.toCharArray()) {
+            if (Character.isLetter(c)) {
+                if (useYellow) {
+                    result.append(ChatColor.YELLOW).append(c);
+                } else {
+                    result.append(ChatColor.GREEN).append(c);
+                }
+                useYellow = !useYellow; // Alternate colors
+            } else {
+                result.append(c); // Keep non-letter characters as-is
+            }
+        }
+
+        return result.toString();
+    }
+
     private void showStatsBoard(Player viewer, Player target) {
         StatsManager.PlayerStats stats = StatsManager.getInstance().getPlayerStats(target);
         
@@ -101,6 +139,8 @@ public class PlayerStatsListener implements Listener {
         viewer.sendMessage(ChatColor.DARK_GRAY + "│ " + ChatColor.LIGHT_PURPLE + "● Animals Killed: " + ChatColor.WHITE + stats.getAnimalsKilled());
         viewer.sendMessage(ChatColor.DARK_GRAY + "│ " + ChatColor.DARK_RED + "● Hostile Mobs Killed: " + ChatColor.WHITE + stats.getHostileMobsKilled());
         viewer.sendMessage(ChatColor.DARK_GRAY + "│ " + ChatColor.GOLD + "● Blocks Mined: " + ChatColor.WHITE + stats.getBlocksMined());
+        viewer.sendMessage(ChatColor.DARK_GRAY + "│ " + ChatColor.GOLD + "● Items Crafted: " + ChatColor.WHITE + stats.getItemsCrafted());
+        viewer.sendMessage(ChatColor.DARK_GRAY + "│ " + ChatColor.YELLOW + "● " + applyLimeGreenPattern("XP Collected: ") + ChatColor.WHITE + stats.getXpCollected());
         viewer.sendMessage(ChatColor.DARK_GRAY + "│");
         viewer.sendMessage(ChatColor.DARK_GRAY + "│ " + ChatColor.DARK_PURPLE + "☠️ BOSS KILLS ☠️");
         viewer.sendMessage(ChatColor.DARK_GRAY + "│ " + ChatColor.DARK_BLUE + "● Warden: " + ChatColor.BLUE + stats.getWardenKilled());
