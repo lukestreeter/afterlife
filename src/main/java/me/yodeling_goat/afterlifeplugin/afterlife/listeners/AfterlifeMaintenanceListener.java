@@ -9,6 +9,7 @@ import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.player.PlayerToggleFlightEvent;
 import org.bukkit.event.player.PlayerToggleSneakEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
+import org.bukkit.event.entity.EntityDamageEvent;
 import me.yodeling_goat.afterlifeplugin.afterlife.AfterlifeManager;
 
 public class AfterlifeMaintenanceListener implements Listener {
@@ -18,10 +19,16 @@ public class AfterlifeMaintenanceListener implements Listener {
         Player player = event.getPlayer();
 
         if (AfterlifeManager.isInAfterlife(player)) {
-            // Keep hunger at max
+            // Keep hunger at max and health at max to minimize health bar visibility
             if (player.getFoodLevel() < 20) {
                 player.setFoodLevel(20);
                 player.setSaturation(20.0f);
+                player.setExhaustion(0.0f);
+            }
+            
+            // Ensure health is always at maximum
+            if (player.getHealth() < player.getMaxHealth()) {
+                player.setHealth(player.getMaxHealth());
             }
         }
     }
@@ -65,6 +72,19 @@ public class AfterlifeMaintenanceListener implements Listener {
             event.setCancelled(true);
             attacker.sendMessage("§cYou cannot attack players in the afterlife!");
             return;
+        }
+    }
+    
+    @EventHandler
+    public void onEntityDamage(EntityDamageEvent event) {
+        // Prevent any damage to afterlife players to keep health bar hidden
+        if (event.getEntity() instanceof Player) {
+            Player player = (Player) event.getEntity();
+            if (AfterlifeManager.isInAfterlife(player)) {
+                event.setCancelled(true);
+                // Ensure health stays at maximum
+                player.setHealth(player.getMaxHealth());
+            }
         }
     }
 

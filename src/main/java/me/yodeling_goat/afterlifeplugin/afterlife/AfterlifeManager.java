@@ -138,6 +138,9 @@ public class AfterlifeManager {
 
         // remove karma display
         KarmaManager.removeKarmaDisplay(player);
+        
+        // Hide health and hunger bars
+        me.yodeling_goat.afterlifeplugin.afterlife.listeners.AfterlifeUIListener.hideHealthAndHungerBar(player);
     }
 
     public static void applyTemporaryAfterlifeEffects(Player player) {
@@ -175,5 +178,8 @@ public class AfterlifeManager {
         
         // Restore normal hunger (let it regenerate naturally)
         // Don't set specific values, let the game handle it
+        
+        // Show health and hunger bars
+        me.yodeling_goat.afterlifeplugin.afterlife.listeners.AfterlifeUIListener.showHealthAndHungerBar(player);
     }
 } 
