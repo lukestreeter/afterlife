@@ -26,6 +26,10 @@ import me.yodeling_goat.afterlifeplugin.stats.listeners.BossKillListener;
 // Grave system
 import me.yodeling_goat.afterlifeplugin.grave.listeners.PlayerEnteredAfterlifeListener;
 
+// Leaderboard system
+import me.yodeling_goat.afterlifeplugin.leaderboard.listeners.LeaderboardListener;
+import me.yodeling_goat.afterlifeplugin.leaderboard.CompassManager;
+
 public class AfterLifePlugin extends JavaPlugin implements Listener {
     
     private static AfterLifePlugin instance;
@@ -63,6 +67,9 @@ public class AfterLifePlugin extends JavaPlugin implements Listener {
 
         // Register grave listeners
         Bukkit.getPluginManager().registerEvents(new PlayerEnteredAfterlifeListener(), this);
+
+        // Register leaderboard listeners
+        Bukkit.getPluginManager().registerEvents(new LeaderboardListener(), this);
         
         // Register this plugin as a listener for player join events
         Bukkit.getPluginManager().registerEvents(this, this);
@@ -93,5 +100,8 @@ public class AfterLifePlugin extends JavaPlugin implements Listener {
         Player player = event.getPlayer();
         KarmaManager.initializeKarmaDisplay(player);
         AfterlifeManager.initializeAfterlifeState(player);
+        
+        // Give leaderboard compass to new players
+        CompassManager.giveLeaderboardCompass(player);
     }
 }
