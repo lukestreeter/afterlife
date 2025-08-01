@@ -142,6 +142,11 @@ public class PlayerStatsListener implements Listener {
         viewer.sendMessage(ChatColor.DARK_GRAY + "│ " + ChatColor.GOLD + "● Items Crafted: " + ChatColor.WHITE + stats.getItemsCrafted());
         viewer.sendMessage(ChatColor.DARK_GRAY + "│ " + ChatColor.YELLOW + "● " + applyLimeGreenPattern("XP Collected: ") + ChatColor.WHITE + stats.getXpCollected());
         viewer.sendMessage(ChatColor.DARK_GRAY + "│");
+        viewer.sendMessage(ChatColor.DARK_GRAY + "│ " + ChatColor.DARK_PURPLE + "☠️ BOSS KILLS ☠️");
+        viewer.sendMessage(ChatColor.DARK_GRAY + "│ " + ChatColor.DARK_BLUE + "● Warden: " + ChatColor.BLUE + stats.getWardenKilled());
+        viewer.sendMessage(ChatColor.DARK_GRAY + "│ " + ChatColor.DARK_PURPLE + "● Ender Dragon: " + ChatColor.LIGHT_PURPLE + stats.getEnderDragonKilled());
+        viewer.sendMessage(ChatColor.DARK_GRAY + "│ " + ChatColor.BLACK + "● Wither: " + ChatColor.RED + stats.getWitherKilled());
+        viewer.sendMessage(ChatColor.DARK_GRAY + "│");
         viewer.sendMessage(ChatColor.DARK_GRAY + "└─────────────────────────────────┘");
         viewer.sendMessage("");
         
