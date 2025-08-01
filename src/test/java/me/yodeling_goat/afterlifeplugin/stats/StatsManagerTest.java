@@ -21,7 +21,7 @@ class StatsManagerTest {
         int blocksMined = 50;
         
         // When
-        StatsManager.PlayerStats stats = new StatsManager.PlayerStats(kills, deaths, animalsKilled, hostileMobsKilled, itemsCrafted, xpCollected, blocksMined);
+        StatsManager.PlayerStats stats = new StatsManager.PlayerStats(kills, deaths, animalsKilled, itemsCrafted, xpCollected, hostileMobsKilled, blocksMined, 0, 0, 0);
         
         // Then
         assertEquals(kills, stats.getKills());
@@ -44,7 +44,7 @@ class StatsManagerTest {
         int blocksMined = 0;
         
         // When
-        StatsManager.PlayerStats stats = new StatsManager.PlayerStats(kills, deaths, animalsKilled, hostileMobsKilled, itemsCrafted, xpCollected, blocksMined);
+        StatsManager.PlayerStats stats = new StatsManager.PlayerStats(kills, deaths, animalsKilled, itemsCrafted, xpCollected, hostileMobsKilled, blocksMined, 0, 0, 0);
         
         // Then
         assertEquals(kills, stats.getKills());
@@ -56,7 +56,7 @@ class StatsManagerTest {
     @Test
     void testAddItemCraftedMethod() {
         // Given
-        StatsManager.PlayerStats stats = new StatsManager.PlayerStats(0, 0, 0, 0, 0, 0, 0);
+        StatsManager.PlayerStats stats = new StatsManager.PlayerStats(0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
         
         // When
         stats.addItemCrafted();
@@ -69,7 +69,7 @@ class StatsManagerTest {
     @Test
     void testAddItemCraftedMultipleTimes() {
         // Given
-        StatsManager.PlayerStats stats = new StatsManager.PlayerStats(0, 0, 0, 0, 0, 0, 0);
+        StatsManager.PlayerStats stats = new StatsManager.PlayerStats(0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
         
         // When
         for (int i = 0; i < 10; i++) {
@@ -83,7 +83,7 @@ class StatsManagerTest {
     @Test
     void testItemsCraftedWithOtherStats() {
         // Given
-        StatsManager.PlayerStats stats = new StatsManager.PlayerStats(5, 2, 8, 3, 12, 500, 25);
+        StatsManager.PlayerStats stats = new StatsManager.PlayerStats(5, 2, 8, 12, 0, 3, 25, 0, 0, 0);
         
         // When
         stats.addKill();
@@ -101,7 +101,7 @@ class StatsManagerTest {
     @Test
     void testItemsCraftedDefaultValue() {
         // Given
-        StatsManager.PlayerStats stats = new StatsManager.PlayerStats(0, 0, 0, 0, 0, 0, 0);
+        StatsManager.PlayerStats stats = new StatsManager.PlayerStats(0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
         
         // Then
         assertEquals(0, stats.getItemsCrafted());
@@ -110,7 +110,7 @@ class StatsManagerTest {
     @Test
     void testKDRatioWithItemsCrafted() {
         // Given
-        StatsManager.PlayerStats stats = new StatsManager.PlayerStats(10, 5, 3, 2, 15, 750, 30);
+        StatsManager.PlayerStats stats = new StatsManager.PlayerStats(10, 5, 3, 15, 0, 2, 30, 0, 0, 0);
         
         // Then
         assertEquals(2.0, stats.getKDRatio());
@@ -129,7 +129,7 @@ class StatsManagerTest {
         int blocksMined = 100;
         
         // When
-        StatsManager.PlayerStats stats = new StatsManager.PlayerStats(kills, deaths, animalsKilled, hostileMobsKilled, itemsCrafted, xpCollected, blocksMined);
+        StatsManager.PlayerStats stats = new StatsManager.PlayerStats(kills, deaths, animalsKilled, itemsCrafted, xpCollected, hostileMobsKilled, blocksMined, 0, 0, 0);
         
         // Then
         assertEquals(kills, stats.getKills());
@@ -143,7 +143,7 @@ class StatsManagerTest {
     @Test
     void testAddXpCollected() {
         // Given
-        StatsManager.PlayerStats stats = new StatsManager.PlayerStats(0, 0, 0, 0, 0, 0, 0);
+        StatsManager.PlayerStats stats = new StatsManager.PlayerStats(0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
         
         // When
         stats.addXpCollected(100);
@@ -157,7 +157,7 @@ class StatsManagerTest {
     @Test
     void testXpCollectedDefaultValue() {
         // Given
-        StatsManager.PlayerStats stats = new StatsManager.PlayerStats(0, 0, 0, 0, 0, 0, 0);
+        StatsManager.PlayerStats stats = new StatsManager.PlayerStats(0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
         
         // Then
         assertEquals(0, stats.getXpCollected());
@@ -166,7 +166,7 @@ class StatsManagerTest {
     @Test
     void testXpCollectedWithOtherStats() {
         // Given
-        StatsManager.PlayerStats stats = new StatsManager.PlayerStats(5, 2, 8, 3, 12, 1000, 75);
+        StatsManager.PlayerStats stats = new StatsManager.PlayerStats(5, 2, 8, 12, 1000, 3, 75, 0, 0, 0);
         
         // When
         stats.addKill();

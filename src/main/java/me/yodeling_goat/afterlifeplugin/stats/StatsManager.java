@@ -60,7 +60,7 @@ public class StatsManager {
                 int wardenKilled = statsConfig.getInt("players." + uuidString + ".warden_killed", 0);
                 int enderDragonKilled = statsConfig.getInt("players." + uuidString + ".ender_dragon_killed", 0);
                 int witherKilled = statsConfig.getInt("players." + uuidString + ".wither_killed", 0);
-                playerStats.put(uuid, new PlayerStats(kills, deaths, animalsKilled, hostileMobsKilled, blocksMined, wardenKilled, enderDragonKilled, witherKilled));
+                playerStats.put(uuid, new PlayerStats(kills, deaths, animalsKilled, 0, 0, hostileMobsKilled, blocksMined, wardenKilled, enderDragonKilled, witherKilled));
             }
         }
     }
@@ -87,7 +87,7 @@ public class StatsManager {
     }
     
     public PlayerStats getPlayerStats(Player player) {
-        return playerStats.computeIfAbsent(player.getUniqueId(), k -> new PlayerStats(0, 0, 0, 0, 0, 0, 0));
+        return playerStats.computeIfAbsent(player.getUniqueId(), k -> new PlayerStats(0, 0, 0, 0, 0, 0, 0, 0, 0, 0));
     }
     
     public void addKill(Player player) {
@@ -151,7 +151,7 @@ public class StatsManager {
     }
 
     public void resetPlayerStats(Player player) {
-        playerStats.put(player.getUniqueId(), new PlayerStats(0, 0, 0, 0, 0, 0, 0, 0));
+        playerStats.put(player.getUniqueId(), new PlayerStats(0, 0, 0, 0, 0, 0, 0, 0, 0, 0));
         saveStats();
     }
 
@@ -177,10 +177,12 @@ public class StatsManager {
         private int enderDragonKilled;
         private int witherKilled;
 
-        public PlayerStats(int kills, int deaths, int animalsKilled, int hostileMobsKilled, int blocksMined, int wardenKilled, int enderDragonKilled, int witherKilled) {
+        public PlayerStats(int kills, int deaths, int animalsKilled, int itemsCrafted, int xpCollected, int hostileMobsKilled, int blocksMined, int wardenKilled, int enderDragonKilled, int witherKilled) {
             this.kills = kills;
             this.deaths = deaths;
             this.animalsKilled = animalsKilled;
+            this.itemsCrafted = itemsCrafted;
+            this.xpCollected = xpCollected;
             this.hostileMobsKilled = hostileMobsKilled;
             this.blocksMined = blocksMined;
             this.wardenKilled = wardenKilled;

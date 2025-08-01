@@ -10,7 +10,7 @@ public class BossKillStatTest {
     @Test
     public void testBossKillStatInitialization() {
         // Test that new PlayerStats start with 0 boss kills
-        StatsManager.PlayerStats stats = new StatsManager.PlayerStats(0, 0);
+        StatsManager.PlayerStats stats = new StatsManager.PlayerStats(0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
         
         assertEquals(0, stats.getWardenKilled());
         assertEquals(0, stats.getEnderDragonKilled());
@@ -20,7 +20,7 @@ public class BossKillStatTest {
     @Test
     public void testWardenKillStatIncrement() {
         // Test warden kill increment
-        StatsManager.PlayerStats stats = new StatsManager.PlayerStats(0, 0);
+        StatsManager.PlayerStats stats = new StatsManager.PlayerStats(0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
         
         stats.addWardenKill();
         assertEquals(1, stats.getWardenKilled());
@@ -37,7 +37,7 @@ public class BossKillStatTest {
     @Test
     public void testEnderDragonKillStatIncrement() {
         // Test ender dragon kill increment
-        StatsManager.PlayerStats stats = new StatsManager.PlayerStats(0, 0);
+        StatsManager.PlayerStats stats = new StatsManager.PlayerStats(0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
         
         stats.addEnderDragonKill();
         assertEquals(0, stats.getWardenKilled());
@@ -53,7 +53,7 @@ public class BossKillStatTest {
     @Test
     public void testWitherKillStatIncrement() {
         // Test wither kill increment
-        StatsManager.PlayerStats stats = new StatsManager.PlayerStats(0, 0);
+        StatsManager.PlayerStats stats = new StatsManager.PlayerStats(0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
         
         stats.addWitherKill();
         assertEquals(0, stats.getWardenKilled());
@@ -71,7 +71,7 @@ public class BossKillStatTest {
     @Test
     public void testAllBossKillsIndependent() {
         // Test that all boss kill stats are independent
-        StatsManager.PlayerStats stats = new StatsManager.PlayerStats(0, 0);
+        StatsManager.PlayerStats stats = new StatsManager.PlayerStats(0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
         
         stats.addWardenKill();
         stats.addEnderDragonKill();
