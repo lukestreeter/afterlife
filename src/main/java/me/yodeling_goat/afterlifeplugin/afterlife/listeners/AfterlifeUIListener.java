@@ -85,13 +85,13 @@ public class AfterlifeUIListener implements Listener {
         // Remove any absorption hearts
         player.setAbsorptionAmount(0);
         
-        // Disable hunger completely
+        // Set hunger to full with hunger effect (shows brown drumsticks)
         player.setFoodLevel(20);
         player.setSaturation(20.0f);
         player.setExhaustion(0.0f);
         
-        // Add saturation effect to prevent hunger loss  
-        player.addPotionEffect(new PotionEffect(PotionEffectType.SATURATION, Integer.MAX_VALUE, 0, false, false, false));
+        // Add hunger effect to make hunger bar appear withered/poisoned (brownish color)
+        player.addPotionEffect(new PotionEffect(PotionEffectType.HUNGER, Integer.MAX_VALUE, 0, false, false, false));
         
         // Add wither effect to make hearts black (indicates death/afterlife state)
         player.addPotionEffect(new PotionEffect(PotionEffectType.WITHER, Integer.MAX_VALUE, 0, false, false, false));
@@ -107,15 +107,15 @@ public class AfterlifeUIListener implements Listener {
                     player.setAbsorptionAmount(0);
                 }
                 
-                // Maintain food level
+                // Maintain full food level with hunger effect
                 if (player.getFoodLevel() < 20) {
                     player.setFoodLevel(20);
                     player.setSaturation(20.0f);
                 }
                 
-                // Ensure saturation effect is still active
-                if (!player.hasPotionEffect(PotionEffectType.SATURATION)) {
-                    player.addPotionEffect(new PotionEffect(PotionEffectType.SATURATION, Integer.MAX_VALUE, 0, false, false, false));
+                // Ensure hunger effect is still active (for brownish hunger bar)
+                if (!player.hasPotionEffect(PotionEffectType.HUNGER)) {
+                    player.addPotionEffect(new PotionEffect(PotionEffectType.HUNGER, Integer.MAX_VALUE, 0, false, false, false));
                 }
                 
                 // Ensure wither effect is still active (for black hearts)
@@ -136,7 +136,7 @@ public class AfterlifeUIListener implements Listener {
      */
     public static void showHealthAndHungerBar(Player player) {
         // Remove potion effects
-        player.removePotionEffect(PotionEffectType.SATURATION);
+        player.removePotionEffect(PotionEffectType.HUNGER);
         player.removePotionEffect(PotionEffectType.WITHER);
         
         // Clear absorption amount
