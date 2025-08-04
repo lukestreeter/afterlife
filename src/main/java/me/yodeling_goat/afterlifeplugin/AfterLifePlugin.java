@@ -6,231 +6,102 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.entity.Player;
-import org.bukkit.GameMode;
-import org.bukkit.ChatColor;
-import org.bukkit.command.Command;
-import org.bukkit.command.CommandSender;
-import org.bukkit.command.CommandExecutor;
 
 // Karma system
 import me.yodeling_goat.afterlifeplugin.karma.KarmaManager;
+
 // Afterlife system
 import me.yodeling_goat.afterlifeplugin.afterlife.AfterlifeManager;
 import me.yodeling_goat.afterlifeplugin.afterlife.listeners.AfterlifeEffectsListener;
 import me.yodeling_goat.afterlifeplugin.afterlife.listeners.AfterlifeRestrictionListener;
+import me.yodeling_goat.afterlifeplugin.afterlife.listeners.AfterlifeMaintenanceListener;
 import me.yodeling_goat.afterlifeplugin.afterlife.listeners.PlayerDeathListener;
 import me.yodeling_goat.afterlifeplugin.afterlife.listeners.EntityDeathListener;
-import me.yodeling_goat.afterlifeplugin.afterlife.listeners.MobSpectateListener;
-import me.yodeling_goat.afterlifeplugin.afterlife.util.MobMorphManager;
+
+// Stats system
+import me.yodeling_goat.afterlifeplugin.stats.StatsManager;
+import me.yodeling_goat.afterlifeplugin.stats.listeners.PlayerStatsListener;
+import me.yodeling_goat.afterlifeplugin.stats.listeners.BossKillListener;
+
 // Grave system
-import me.yodeling_goat.afterlifeplugin.grave.GraveManager;
-import org.bukkit.entity.Entity;
-import org.bukkit.entity.LivingEntity;
-import org.bukkit.entity.Mob;
+import me.yodeling_goat.afterlifeplugin.grave.listeners.PlayerEnteredAfterlifeListener;
+
+// Leaderboard system
+import me.yodeling_goat.afterlifeplugin.leaderboard.listeners.LeaderboardListener;
+import me.yodeling_goat.afterlifeplugin.leaderboard.CompassManager;
 
 public class AfterLifePlugin extends JavaPlugin implements Listener {
+    
+    private static AfterLifePlugin instance;
+    
+    public static AfterLifePlugin getInstance() {
+        return instance;
+    }
+    
     @Override
     public void onEnable() {
+        instance = this;
+        // Save default config if it doesn't exist
+        saveDefaultConfig();
         getLogger().info("AfterLifePlugin is starting up...");
+        
+        // Initialize afterlife manager
+        AfterlifeManager.initialize();
+        
+        // Register managers that implement Listener
         KarmaManager karmaManager = new KarmaManager();
-        GraveManager graveManager = new GraveManager();
-        MobMorphManager morphManager = new MobMorphManager(this);
+        
+        // Register managers as listeners
         Bukkit.getPluginManager().registerEvents(karmaManager, this);
-        Bukkit.getPluginManager().registerEvents(graveManager, this);
+        
+        // Register afterlife listeners
         Bukkit.getPluginManager().registerEvents(new AfterlifeEffectsListener(), this);
         Bukkit.getPluginManager().registerEvents(new AfterlifeRestrictionListener(), this);
+        Bukkit.getPluginManager().registerEvents(new AfterlifeMaintenanceListener(), this);
         Bukkit.getPluginManager().registerEvents(new PlayerDeathListener(), this);
         Bukkit.getPluginManager().registerEvents(new EntityDeathListener(), this);
-        Bukkit.getPluginManager().registerEvents(new MobSpectateListener(), this);
-        Bukkit.getPluginManager().registerEvents(morphManager, this);
+
+        // Register stats listeners
+        Bukkit.getPluginManager().registerEvents(new PlayerStatsListener(), this);
+        Bukkit.getPluginManager().registerEvents(new BossKillListener(), this);
+
+        // Register grave listeners
+        Bukkit.getPluginManager().registerEvents(new PlayerEnteredAfterlifeListener(), this);
+
+        // Register leaderboard listeners
+        Bukkit.getPluginManager().registerEvents(new LeaderboardListener(), this);
+        
+        // Register this plugin as a listener for player join events
         Bukkit.getPluginManager().registerEvents(this, this);
         
-        // Register commands
-        getCommand("exitafterlife").setExecutor(new ExitAfterlifeCommand());
-        getCommand("checkafterlife").setExecutor(new CheckAfterlifeCommand());
-        getCommand("forceexitafterlife").setExecutor(new ForceExitAfterlifeCommand());
-        getCommand("morphdebug").setExecutor(new MorphDebugCommand());
-        getCommand("testmorph").setExecutor(new TestMorphCommand());
-        getCommand("enterafterlife").setExecutor(new EnterAfterlifeCommand());
+        // Schedule periodic cleanup of offline afterlife players (every 5 minutes)
+        Bukkit.getScheduler().runTaskTimer(this, () -> {
+            AfterlifeManager.cleanupOfflinePlayers();
+        }, 6000L, 6000L); // 6000 ticks = 5 minutes
         
         getLogger().info("AfterLifePlugin has been enabled!");
     }
+    
+    @Override
+    public void onDisable() {
+        getLogger().info("AfterLifePlugin is shutting down...");
+        
+        // Save afterlife state before shutting down
+        AfterlifeManager.saveAfterlifeState();
+        
+        // Save all stats before shutting down
+        StatsManager.getInstance().saveStats();
+        
+        getLogger().info("AfterLifePlugin has been disabled!");
+    }
+    
     @EventHandler
     public void onPlayerJoin(PlayerJoinEvent event) {
         Player player = event.getPlayer();
         KarmaManager.initializeKarmaDisplay(player);
         AfterlifeManager.initializeAfterlifeState(player);
-    }
-    @Override
-    public void onDisable() {
-        getLogger().info("AfterLifePlugin is shutting down...");
-        getLogger().info("AfterLifePlugin has been disabled!");
-    }
-}
-
-class ExitAfterlifeCommand implements CommandExecutor {
-    @Override
-    public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
-        if (!(sender instanceof Player)) {
-            sender.sendMessage(ChatColor.RED + "This command can only be used by players!");
-            return true;
-        }
         
-        Player player = (Player) sender;
-        
-        if (!AfterlifeManager.isInAfterlife(player)) {
-            player.sendMessage(ChatColor.RED + "You are not in the afterlife!");
-            return true;
-        }
-        
-        AfterlifeManager.removeFromAfterlife(player);
-        return true;
-    }
-}
-
-class CheckAfterlifeCommand implements CommandExecutor {
-    @Override
-    public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
-        if (!(sender instanceof Player)) {
-            sender.sendMessage(ChatColor.RED + "This command can only be used by players!");
-            return true;
-        }
-        
-        Player player = (Player) sender;
-        
-        if (AfterlifeManager.isInAfterlife(player)) {
-            player.sendMessage(ChatColor.YELLOW + "You are currently in the afterlife.");
-        } else {
-            player.sendMessage(ChatColor.GREEN + "You are not in the afterlife.");
-        }
-        
-        return true;
-    }
-}
-
-class ForceExitAfterlifeCommand implements CommandExecutor {
-    @Override
-    public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
-        if (!sender.hasPermission("afterlife.admin")) {
-            sender.sendMessage(ChatColor.RED + "You don't have permission to use this command!");
-            return true;
-        }
-        
-        if (args.length != 1) {
-            sender.sendMessage(ChatColor.RED + "Usage: /forceexitafterlife <player>");
-            return true;
-        }
-        
-        String playerName = args[0];
-        Player targetPlayer = Bukkit.getPlayer(playerName);
-        
-        if (targetPlayer == null) {
-            sender.sendMessage(ChatColor.RED + "Player " + playerName + " is not online!");
-            return true;
-        }
-        
-        if (!AfterlifeManager.isInAfterlife(targetPlayer)) {
-            sender.sendMessage(ChatColor.RED + "Player " + playerName + " is not in the afterlife!");
-            return true;
-        }
-        
-        AfterlifeManager.removeFromAfterlife(targetPlayer);
-        sender.sendMessage(ChatColor.GREEN + "Successfully removed " + playerName + " from the afterlife!");
-        
-        return true;
-    }
-}
-
-class MorphDebugCommand implements CommandExecutor {
-    @Override
-    public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
-        if (!(sender instanceof Player)) {
-            sender.sendMessage(ChatColor.RED + "This command can only be used by players!");
-            return true;
-        }
-        
-        Player player = (Player) sender;
-        
-        sender.sendMessage(ChatColor.GOLD + "=== Morph Debug Info ===");
-        sender.sendMessage(ChatColor.YELLOW + "In Afterlife: " + ChatColor.WHITE + AfterlifeManager.isInAfterlife(player));
-        sender.sendMessage(ChatColor.YELLOW + "Is Morphed: " + ChatColor.WHITE + MobMorphManager.isMorphed(player));
-        sender.sendMessage(ChatColor.YELLOW + "Game Mode: " + ChatColor.WHITE + player.getGameMode());
-        sender.sendMessage(ChatColor.YELLOW + "Can Fly: " + ChatColor.WHITE + player.getAllowFlight());
-        sender.sendMessage(ChatColor.YELLOW + "Is Flying: " + ChatColor.WHITE + player.isFlying());
-        
-        if (MobMorphManager.isMorphed(player)) {
-            Entity morphedEntity = MobMorphManager.getMorphedEntity(player);
-            sender.sendMessage(ChatColor.YELLOW + "Morphed Entity: " + ChatColor.WHITE + (morphedEntity != null ? morphedEntity.getName() : "null"));
-            if (morphedEntity != null) {
-                sender.sendMessage(ChatColor.YELLOW + "Entity Location: " + ChatColor.WHITE + morphedEntity.getLocation());
-                sender.sendMessage(ChatColor.YELLOW + "Entity AI: " + ChatColor.WHITE + (morphedEntity instanceof Mob ? ((Mob) morphedEntity).hasAI() : "N/A"));
-            }
-        }
-        
-        return true;
-    }
-}
-
-class TestMorphCommand implements CommandExecutor {
-    @Override
-    public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
-        if (!(sender instanceof Player)) {
-            sender.sendMessage(ChatColor.RED + "This command can only be used by players!");
-            return true;
-        }
-        
-        Player player = (Player) sender;
-        
-        // Find a nearby mob to morph into
-        LivingEntity nearestMob = null;
-        double nearestDistance = Double.MAX_VALUE;
-        
-        for (Entity entity : player.getNearbyEntities(10, 10, 10)) {
-            if (entity instanceof LivingEntity && !(entity instanceof Player)) {
-                double distance = player.getLocation().distance(entity.getLocation());
-                if (distance < nearestDistance) {
-                    nearestDistance = distance;
-                    nearestMob = (LivingEntity) entity;
-                }
-            }
-        }
-        
-        if (nearestMob == null) {
-            sender.sendMessage(ChatColor.RED + "No mobs found within 10 blocks!");
-            return true;
-        }
-        
-        sender.sendMessage(ChatColor.GREEN + "Attempting to morph into " + nearestMob.getName() + "...");
-        MobMorphManager.morphIntoMob(player, nearestMob);
-        
-        return true;
-    }
-}
-
-class EnterAfterlifeCommand implements CommandExecutor {
-    @Override
-    public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
-        if (!sender.hasPermission("afterlife.admin")) {
-            sender.sendMessage(ChatColor.RED + "You don't have permission to use this command!");
-            return true;
-        }
-        
-        if (!(sender instanceof Player)) {
-            sender.sendMessage(ChatColor.RED + "This command can only be used by players!");
-            return true;
-        }
-        
-        Player player = (Player) sender;
-        
-        if (AfterlifeManager.isInAfterlife(player)) {
-            sender.sendMessage(ChatColor.RED + "You are already in the afterlife!");
-            return true;
-        }
-        
-        AfterlifeManager.sendToAfterlife(player);
-        AfterlifeManager.applyAllAfterlifeEffects(player);
-        sender.sendMessage(ChatColor.GREEN + "You have been sent to the afterlife for testing!");
-        
-        return true;
+        // Give leaderboard compass to new players
+        CompassManager.giveLeaderboardCompass(player);
     }
 }

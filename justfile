@@ -27,6 +27,22 @@ start-server: deploy
     fi
     cd dev-server && java -Xms2G -Xmx4G -jar paper.jar nogui
 
+# Test command
+test test_class="":
+    #!/usr/bin/env bash
+    echo "Usage: just test [test_class]"
+    echo "Examples:"
+    echo "  just test                    # Run all tests"
+    echo "  just test AfterlifePersistenceTest  # Run specific test"
+    echo ""
+    if [ -z "{{test_class}}" ]; then
+        echo "Running all tests..."
+        mvn test
+    else
+        echo "Running test: {{test_class}}"
+        mvn test -Dtest={{test_class}}
+    fi
+
 nuke:
     rm -rf dev-server
     rm -rf target 

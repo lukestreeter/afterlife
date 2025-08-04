@@ -41,6 +41,9 @@ public class MobMorphManager implements Listener {
     private static final HashMap<UUID, BukkitRunnable> movementTasks = new HashMap<>();
     private static final HashMap<UUID, Long> lastMovementTime = new HashMap<>();
     private static final HashMap<UUID, Long> lastAttackTime = new HashMap<>();
+    private static final HashMap<UUID, Integer> fireballsUsed = new HashMap<>();
+    
+    private static final int FIREBALL_LIMIT = 20; // Total fireballs allowed per afterlife session
     
 
     
@@ -165,6 +168,28 @@ public class MobMorphManager implements Listener {
         return morphedPlayers.get(player.getUniqueId());
     }
     
+    public static int getFireballsUsed(Player player) {
+        return fireballsUsed.getOrDefault(player.getUniqueId(), 0);
+    }
+    
+    public static int getFireballsRemaining(Player player) {
+        return FIREBALL_LIMIT - getFireballsUsed(player);
+    }
+    
+    public static boolean canUseFireball(Player player) {
+        return getFireballsRemaining(player) > 0;
+    }
+    
+    public static void incrementFireballsUsed(Player player) {
+        UUID playerId = player.getUniqueId();
+        int current = fireballsUsed.getOrDefault(playerId, 0);
+        fireballsUsed.put(playerId, current + 1);
+    }
+    
+    public static void resetFireballsUsed(Player player) {
+        fireballsUsed.put(player.getUniqueId(), 0);
+    }
+    
     @EventHandler
     public void onPlayerToggleSneak(PlayerToggleSneakEvent event) {
         Player player = event.getPlayer();
@@ -232,6 +257,14 @@ public class MobMorphManager implements Listener {
         
         // Handle morph attacks
         if (isMorphed(player) && (event.getAction() == Action.LEFT_CLICK_AIR || event.getAction() == Action.LEFT_CLICK_BLOCK)) {
+            
+            // Check fireball limit for afterlife players
+            if (AfterlifeManager.isInAfterlife(player)) {
+                if (!canUseFireball(player)) {
+                    player.sendMessage(ChatColor.RED + "You have used all " + ChatColor.YELLOW + FIREBALL_LIMIT + ChatColor.RED + " fireballs in this afterlife session!");
+                    return;
+                }
+            }
             
             // Check cooldown (5 seconds = 5000 milliseconds)
             long currentTime = System.currentTimeMillis();
@@ -452,6 +485,14 @@ public class MobMorphManager implements Listener {
             player.sendMessage(ChatColor.YELLOW + "Shift: " + ChatColor.WHITE + "Exit morph (hold shift)");
             player.sendMessage(ChatColor.GREEN + "You are now: " + ChatColor.AQUA + morphedEntity.getName());
             player.sendMessage(ChatColor.GRAY + "Tip: The mob will follow you as you move around!");
+            
+            // Show fireball count for afterlife players
+            if (AfterlifeManager.isInAfterlife(player)) {
+                int used = getFireballsUsed(player);
+                int remaining = getFireballsRemaining(player);
+                player.sendMessage(ChatColor.RED + "Fireballs used: " + ChatColor.YELLOW + used + ChatColor.RED + "/" + ChatColor.YELLOW + FIREBALL_LIMIT);
+                player.sendMessage(ChatColor.GREEN + "Fireballs remaining: " + ChatColor.YELLOW + remaining);
+            }
         }
     }
 
@@ -519,6 +560,19 @@ public class MobMorphManager implements Listener {
 
         // Create a fireball projectile for laser effect
         org.bukkit.entity.Fireball fireball = shooter.getWorld().spawn(shooterLocation, org.bukkit.entity.Fireball.class);
+        
+        // Increment fireball count for afterlife players
+        if (AfterlifeManager.isInAfterlife(player)) {
+            incrementFireballsUsed(player);
+            int remaining = getFireballsRemaining(player);
+            player.sendMessage(ChatColor.GREEN + "Fireballs remaining: " + ChatColor.YELLOW + remaining);
+            
+            // Warning message every 5 fireballs used
+            int used = getFireballsUsed(player);
+            if (used % 5 == 0 && used > 0) {
+                player.sendMessage(ChatColor.RED + "You have " + ChatColor.YELLOW + remaining + ChatColor.RED + " left to fire!");
+            }
+        }
         
         // Set fireball properties - BIGGER EXPLOSIONS with sheep protection
         fireball.setDirection(direction);
@@ -588,6 +642,19 @@ public class MobMorphManager implements Listener {
         
         // Create a fireball projectile for laser effect
         org.bukkit.entity.Fireball fireball = shooter.getWorld().spawn(shooterLocation, org.bukkit.entity.Fireball.class);
+        
+        // Increment fireball count for afterlife players
+        if (AfterlifeManager.isInAfterlife(player)) {
+            incrementFireballsUsed(player);
+            int remaining = getFireballsRemaining(player);
+            player.sendMessage(ChatColor.GREEN + "Fireballs remaining: " + ChatColor.YELLOW + remaining);
+            
+            // Warning message every 5 fireballs used
+            int used = getFireballsUsed(player);
+            if (used % 5 == 0 && used > 0) {
+                player.sendMessage(ChatColor.RED + "You have " + ChatColor.YELLOW + remaining + ChatColor.RED + " left to fire!");
+            }
+        }
         
         // Set fireball properties - BIGGER EXPLOSIONS with sheep protection
         fireball.setDirection(direction);

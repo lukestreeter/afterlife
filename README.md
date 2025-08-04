@@ -12,26 +12,6 @@ Chain of Events
  - once the ban is over player is teleported back to lobby (original join location, not where they die)
  - player is sent a message saying "your 7-day ban period is over!" (or something more fun)
 
-## Commands
-
-### Player Commands
-- `/exitafterlife` - Exit the afterlife state (requires permission: `afterlife.exit`)
-- `/checkafterlife` - Check if you are currently in the afterlife (requires permission: `afterlife.check`)
-
-### Admin Commands
-- `/forceexitafterlife <player>` - Force remove a player from the afterlife (requires permission: `afterlife.admin`)
-
-## Troubleshooting
-
-### Can't Move Bug
-If you find yourself unable to move after dying, you're likely stuck in the afterlife state. This can happen if the 7-day timer system isn't fully implemented yet. To fix this:
-
-1. **As a player**: Use `/exitafterlife` to exit the afterlife state
-2. **As an admin**: Use `/forceexitafterlife <playername>` to force remove a player from the afterlife
-3. **Check status**: Use `/checkafterlife` to see if you're currently in the afterlife
-
-The movement restriction is caused by the `AfterlifeRestrictionListener` which prevents all interactions for players in the afterlife state. Once you exit the afterlife, all restrictions will be removed and you'll be able to move normally again.
-
 
 # REQUIREMENTS
 These tools are not required but they make the development process much easier
@@ -58,19 +38,7 @@ It could also depend on what you have built, materials you've used, entities you
 -Need to have a way to schedule different Karmas. So you can have different amount of Karmas different days- One day you can get 0 karma from nothing and one day you can get a lot and one day where you can get negative karma. There can also be rewards for reaching certain milestones in Karma! 
 - A comppass that serves as a navigator to other worlds/dimension when in the afterlife!
 - A lobby to select different gamemodes? Hardcore Survival or something crazy that we might stir up!
--Fixing Possession: No hunger when in afterlife, No Head in your hotbar, No debug checking log, Shift as getting out of morph, Way to attack things and players, Dying when you can't fly???, No glowing effect when you morph.
- Notes on Hypixel:
- When you die your body lays flat on the floor.
- Cosmetics (Rewards I guess for playing the game)
- Texture Packs
- Minigames
- Disasters (Survive it)
- Murder Mystery 
- Sky Wars
- Bed Wars
- Parkour
- A main lobby to choose games
- Lobbies for the games
+
 [minecraft]: https://www.minecraft.net
 [spigot]: https://www.spigotmc.org/
 [asdf]: https://asdf-vm.com
