@@ -19,8 +19,7 @@ import me.yodeling_goat.afterlifeplugin.afterlife.util.MobMorphManager;
 import me.yodeling_goat.afterlifeplugin.afterlife.AfterlifeManager;
 
 public class MobSpectateListener implements Listener {
-    private static final String EXIT_MORPH_NAME = ChatColor.RED + "Exit Morph";
-    private static final String EXIT_MORPH_LORE = ChatColor.YELLOW + "Left Click to exit morph mode!";
+
 
     @EventHandler
     public void onPlayerInteractEntity(PlayerInteractEntityEvent event) {
@@ -41,37 +40,7 @@ public class MobSpectateListener implements Listener {
         }
     }
 
-    @EventHandler
-    public void onPlayerInteract(PlayerInteractEvent event) {
-        Player player = event.getPlayer();
-        ItemStack item = event.getItem();
-        
-        if (item != null && item.getType() == Material.PLAYER_HEAD && item.hasItemMeta()) {
-            SkullMeta meta = (SkullMeta) item.getItemMeta();
-            if (meta != null && EXIT_MORPH_NAME.equals(meta.getDisplayName()) &&
-                meta.hasLore() && meta.getLore().contains(EXIT_MORPH_LORE)) {
-                
-                if (event.getAction() == Action.LEFT_CLICK_AIR || event.getAction() == Action.LEFT_CLICK_BLOCK) {
-                    // Remove the head from inventory
-                    item.setAmount(item.getAmount() - 1);
-                    // Exit morph mode using the new system
-                    MobMorphManager.exitMorph(player);
-                    event.setCancelled(true);
-                }
-            }
-        }
-    }
+
     
-    @EventHandler
-    public void onPlayerItemHeld(PlayerItemHeldEvent event) {
-        Player player = event.getPlayer();
-        
-        // Handle hotbar slot changes for morphed players
-        if (MobMorphManager.isMorphed(player)) {
-            int newSlot = event.getNewSlot();
-            if (newSlot == 0) { // Slot 1 - Exit morph
-                MobMorphManager.exitMorph(player);
-            }
-        }
-    }
+
 } 

@@ -42,8 +42,7 @@ public class MobMorphManager implements Listener {
     private static final HashMap<UUID, Long> lastMovementTime = new HashMap<>();
     private static final HashMap<UUID, Long> lastAttackTime = new HashMap<>();
     
-    private static final String EXIT_MORPH_NAME = ChatColor.RED + "Exit Morph";
-    private static final String EXIT_MORPH_LORE = ChatColor.YELLOW + "Left Click to exit morph mode!";
+
     
     private static Plugin plugin;
     
@@ -59,6 +58,9 @@ public class MobMorphManager implements Listener {
         originalLocations.put(playerId, player.getLocation().clone());
         originalGameModes.put(playerId, player.getGameMode());
         originalInventories.put(playerId, player.getInventory().getContents().clone());
+        
+        // Clear player's inventory to prevent head-related issues
+        player.getInventory().clear();
         
         // Store the original mob (don't create a copy)
         morphedPlayers.put(playerId, target);
@@ -84,9 +86,6 @@ public class MobMorphManager implements Listener {
         
         // Start movement task
         startMovementTask(player, target);
-        
-        // Give exit item
-        giveExitMorphItem(player);
         
         // Show morph UI
         showMorphUI(player);
@@ -118,6 +117,11 @@ public class MobMorphManager implements Listener {
         player.addPotionEffect(new PotionEffect(PotionEffectType.GLOWING, Integer.MAX_VALUE, 0, false, false)); // Restore glowing effect
         player.setGameMode(originalGameModes.get(playerId));
         
+        // Restore afterlife effects if player is in afterlife
+        if (AfterlifeManager.isInAfterlife(player)) {
+            AfterlifeManager.applyPermanentAfterlifeEffects(player);
+        }
+        
         // Restore flight state based on whether player is in afterlife
         if (AfterlifeManager.isInAfterlife(player)) {
             player.setAllowFlight(true);
@@ -133,6 +137,13 @@ public class MobMorphManager implements Listener {
         ItemStack[] originalInventory = originalInventories.get(playerId);
         if (originalInventory != null) {
             player.getInventory().setContents(originalInventory);
+        }
+        
+        // Remove any remaining head items that might cause issues
+        for (ItemStack item : player.getInventory().getContents()) {
+            if (item != null && item.getType().name().contains("HEAD")) {
+                player.getInventory().remove(item);
+            }
         }
         
         // Clean up data
@@ -171,6 +182,20 @@ public class MobMorphManager implements Listener {
             return;
         }
         
+        // Check cooldown (5 seconds = 5000 milliseconds)
+        long currentTime = System.currentTimeMillis();
+        long lastAttack = lastAttackTime.getOrDefault(player.getUniqueId(), 0L);
+        long timeSinceLastAttack = currentTime - lastAttack;
+        if (timeSinceLastAttack < 5000) {
+            long remainingTime = 5000 - timeSinceLastAttack;
+            int remainingSeconds = (int) Math.ceil(remainingTime / 1000.0);
+            player.sendMessage(ChatColor.RED + "You must wait " + ChatColor.YELLOW + remainingSeconds + ChatColor.RED + " seconds to use this again!");
+            return;
+        }
+        
+        // Update last attack time
+        lastAttackTime.put(player.getUniqueId(), currentTime);
+        
         Entity morphedEntity = getMorphedEntity(player);
         if (morphedEntity instanceof LivingEntity) {
             LivingEntity livingMob = (LivingEntity) morphedEntity;
@@ -198,30 +223,29 @@ public class MobMorphManager implements Listener {
     @EventHandler
     public void onPlayerInteract(PlayerInteractEvent event) {
         Player player = event.getPlayer();
-        ItemStack item = event.getItem();
         
-        // Handle exit morph item - only if player is holding the exit head
-        if (item != null && item.getType().name().contains("HEAD") && item.hasItemMeta()) {
-            SkullMeta meta = (SkullMeta) item.getItemMeta();
-            if (meta != null && EXIT_MORPH_NAME.equals(meta.getDisplayName()) &&
-                meta.hasLore() && meta.getLore().contains(EXIT_MORPH_LORE)) {
-                
-                if (event.getAction() == Action.LEFT_CLICK_AIR || event.getAction() == Action.LEFT_CLICK_BLOCK) {
-                    item.setAmount(item.getAmount() - 1);
-                    exitMorph(player);
-                    event.setCancelled(true);
-                    return; // Exit early to prevent attack logic
-                }
-            }
+        // Ignore head-related interactions to prevent accidental exits
+        ItemStack item = event.getItem();
+        if (item != null && item.getType().name().contains("HEAD")) {
+            return;
         }
         
-        // Handle morph attacks - only if not holding the exit head
+        // Handle morph attacks
         if (isMorphed(player) && (event.getAction() == Action.LEFT_CLICK_AIR || event.getAction() == Action.LEFT_CLICK_BLOCK)) {
-            // Don't attack if we're holding the exit head
-            if (item != null && item.getType().name().contains("HEAD")) {
-                player.sendMessage(ChatColor.YELLOW + "You can't shoot while holding the exit head!");
+            
+            // Check cooldown (5 seconds = 5000 milliseconds)
+            long currentTime = System.currentTimeMillis();
+            long lastAttack = lastAttackTime.getOrDefault(player.getUniqueId(), 0L);
+            long timeSinceLastAttack = currentTime - lastAttack;
+            if (timeSinceLastAttack < 5000) {
+                long remainingTime = 5000 - timeSinceLastAttack;
+                int remainingSeconds = (int) Math.ceil(remainingTime / 1000.0);
+                player.sendMessage(ChatColor.RED + "You must wait " + ChatColor.YELLOW + remainingSeconds + ChatColor.RED + " seconds to use this again!");
                 return;
             }
+            
+            // Update last attack time
+            lastAttackTime.put(player.getUniqueId(), currentTime);
             
             Entity morphedEntity = getMorphedEntity(player);
             if (morphedEntity instanceof LivingEntity) {
@@ -415,15 +439,7 @@ public class MobMorphManager implements Listener {
 
 
     
-    private static void giveExitMorphItem(Player player) {
-        ItemStack head = new ItemStack(org.bukkit.Material.PLAYER_HEAD, 1);
-        SkullMeta meta = (SkullMeta) head.getItemMeta();
-        meta.setDisplayName(EXIT_MORPH_NAME);
-        meta.setLore(Collections.singletonList(EXIT_MORPH_LORE));
-        meta.setOwningPlayer(player);
-        head.setItemMeta(meta);
-        player.getInventory().addItem(head);
-    }
+
     
     private static void showMorphUI(Player player) {
         Entity morphedEntity = getMorphedEntity(player);
@@ -434,7 +450,6 @@ public class MobMorphManager implements Listener {
             player.sendMessage(ChatColor.YELLOW + "Left Click: " + ChatColor.WHITE + "Attack nearby entities");
             player.sendMessage(ChatColor.YELLOW + "Right Click: " + ChatColor.WHITE + "Interact with entities");
             player.sendMessage(ChatColor.YELLOW + "Shift: " + ChatColor.WHITE + "Exit morph (hold shift)");
-            player.sendMessage(ChatColor.YELLOW + "Exit Head: " + ChatColor.WHITE + "Alternative exit");
             player.sendMessage(ChatColor.GREEN + "You are now: " + ChatColor.AQUA + morphedEntity.getName());
             player.sendMessage(ChatColor.GRAY + "Tip: The mob will follow you as you move around!");
         }
