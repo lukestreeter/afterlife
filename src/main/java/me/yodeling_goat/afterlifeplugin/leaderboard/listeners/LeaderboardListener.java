@@ -9,6 +9,8 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.inventory.InventoryClickEvent;
+import org.bukkit.event.inventory.InventoryDragEvent;
+import org.bukkit.event.inventory.InventoryMoveItemEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.ItemStack;
 
@@ -38,8 +40,8 @@ public class LeaderboardListener implements Listener {
         String title = event.getView().getTitle();
         ItemStack clickedItem = event.getCurrentItem();
         
-        // Handle main lobby menu clicks
-        if (title.equals("§8§lMAIN LOBBY")) {
+        // Handle main menu clicks
+        if (title.equals("§8§lMAIN MENU")) {
             event.setCancelled(true);
             
             if (clickedItem == null || clickedItem.getType() == Material.AIR) {
@@ -59,7 +61,7 @@ public class LeaderboardListener implements Listener {
                 LeaderboardMenu.openStatLeaderboard(player, LeaderboardManager.StatType.HOSTILE_MOBS_KILLED);
             } else if (clickedItem.getType() == Material.DIAMOND_PICKAXE) {
                 LeaderboardMenu.openStatLeaderboard(player, LeaderboardManager.StatType.BLOCKS_MINED);
-            } else if (clickedItem.getType() == Material.DARK_OAK_LOG) {
+            } else if (clickedItem.getType() == Material.OBSIDIAN) {
                 LeaderboardMenu.openStatLeaderboard(player, LeaderboardManager.StatType.WARDEN_KILLED);
             } else if (clickedItem.getType() == Material.DRAGON_HEAD) {
                 LeaderboardMenu.openStatLeaderboard(player, LeaderboardManager.StatType.ENDER_DRAGON_KILLED);
@@ -85,6 +87,39 @@ public class LeaderboardListener implements Listener {
             if (clickedItem.getType() == Material.ARROW) {
                 LeaderboardMenu.openLeaderboardMenu(player);
             }
+        }
+    }
+    
+    @EventHandler
+    public void onInventoryDrag(InventoryDragEvent event) {
+        if (!(event.getWhoClicked() instanceof Player)) {
+            return;
+        }
+        
+        String title = event.getView().getTitle();
+        
+        // Prevent dragging items in leaderboard menus
+        if (title.equals("§8§lMAIN MENU") || title.contains("Leaderboard")) {
+            event.setCancelled(true);
+        }
+    }
+    
+    @EventHandler
+    public void onInventoryMoveItem(InventoryMoveItemEvent event) {
+        // Prevent moving items from leaderboard menus
+        String sourceTitle = "";
+        String destinationTitle = "";
+        
+        if (!event.getSource().getViewers().isEmpty()) {
+            sourceTitle = event.getSource().getViewers().get(0).getOpenInventory().getTitle();
+        }
+        if (!event.getDestination().getViewers().isEmpty()) {
+            destinationTitle = event.getDestination().getViewers().get(0).getOpenInventory().getTitle();
+        }
+        
+        if (sourceTitle.equals("§8§lMAIN MENU") || sourceTitle.contains("Leaderboard") ||
+            destinationTitle.equals("§8§lMAIN MENU") || destinationTitle.contains("Leaderboard")) {
+            event.setCancelled(true);
         }
     }
 } 

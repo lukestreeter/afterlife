@@ -7,6 +7,7 @@ import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.inventory.meta.SkullMeta;
+import me.yodeling_goat.afterlifeplugin.stats.StatsManager;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -92,26 +93,103 @@ public class LeaderboardMenu {
         SkullMeta meta = (SkullMeta) head.getItemMeta();
         
         if (meta != null) {
+            boolean headSet = false;
+            
+            // Try to set the player's head texture
+            try {
+                // First try to get the player if they're online
+                Player onlinePlayer = Bukkit.getPlayer(entry.getPlayerUuid());
+                if (onlinePlayer != null) {
+                    meta.setOwningPlayer(onlinePlayer);
+                    headSet = true;
+                } else {
+                    // If player is offline, try to set by name (this will work for players who have joined before)
+                    meta.setOwner(entry.getPlayerName());
+                    headSet = true;
+                }
+            } catch (Exception e) {
+                // If setting the head fails, we'll use a fallback
+                headSet = false;
+            }
+            
             meta.setDisplayName(getRankColor(rank) + "§l#" + rank + " " + entry.getPlayerName());
             
             List<String> lore = new ArrayList<>();
             lore.add("§7" + statType.getDisplayName() + ": §e" + formatValue(entry.getValue(), statType));
             lore.add("");
+            lore.add("§8Player: §f" + entry.getPlayerName());
+            lore.add("§8Rank: §f#" + rank);
             
-            // Add rank-specific messages
+            // Add additional stats if available
+            try {
+                StatsManager.PlayerStats playerStats = StatsManager.getInstance().getPlayerStats(entry.getPlayerUuid());
+                if (playerStats != null) {
+                    lore.add("");
+                    lore.add("§7Other Stats:");
+                    lore.add("§8Kills: §f" + playerStats.getKills());
+                    lore.add("§8Deaths: §f" + playerStats.getDeaths());
+                    if (playerStats.getKDRatio() > 0) {
+                        lore.add("§8K/D Ratio: §f" + String.format("%.2f", playerStats.getKDRatio()));
+                    }
+                }
+            } catch (Exception e) {
+                // Ignore if we can't get additional stats
+            }
+            
+            lore.add("");
+            
+            // Add rank-specific messages and visual indicators
             if (rank == 1) {
                 lore.add("§6§l🥇 First Place!");
+                lore.add("§6§lCROWNED CHAMPION!");
+                lore.add("§6§l✨ LEGENDARY PLAYER ✨");
             } else if (rank == 2) {
                 lore.add("§7§l🥈 Second Place!");
+                lore.add("§7§lSILVER MEDALIST!");
+                lore.add("§7§l⭐ ELITE PLAYER ⭐");
             } else if (rank == 3) {
                 lore.add("§c§l🥉 Third Place!");
+                lore.add("§c§lBRONZE MEDALIST!");
+                lore.add("§c§l🌟 SKILLED PLAYER 🌟");
+            } else if (rank <= 10) {
+                lore.add("§a§lTOP 10 PLAYER!");
+                lore.add("§a§l🏆 ACHIEVER 🏆");
             }
             
             meta.setLore(lore);
             head.setItemMeta(meta);
+            
+            // If we couldn't set the player head, return a fallback
+            if (!headSet) {
+                return createFallbackHead(entry.getPlayerName(), rank);
+            }
         }
         
         return head;
+    }
+    
+    private static ItemStack createFallbackHead(String playerName, int rank) {
+        // Create a fallback head with a different material if player head fails
+        Material fallbackMaterial = Material.SKELETON_SKULL;
+        switch (rank) {
+            case 1: fallbackMaterial = Material.DIAMOND_BLOCK; break;
+            case 2: fallbackMaterial = Material.IRON_BLOCK; break;
+            case 3: fallbackMaterial = Material.GOLD_BLOCK; break;
+            default: fallbackMaterial = Material.STONE; break;
+        }
+        
+        ItemStack fallback = new ItemStack(fallbackMaterial);
+        ItemMeta meta = fallback.getItemMeta();
+        if (meta != null) {
+            meta.setDisplayName(getRankColor(rank) + "§l#" + rank + " " + playerName);
+            List<String> lore = new ArrayList<>();
+            lore.add("§7Player head unavailable");
+            lore.add("§8Player: §f" + playerName);
+            meta.setLore(lore);
+            fallback.setItemMeta(meta);
+        }
+        
+        return fallback;
     }
     
     private static String getRankColor(int rank) {

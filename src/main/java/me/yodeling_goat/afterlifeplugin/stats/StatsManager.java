@@ -3,11 +3,14 @@ package me.yodeling_goat.afterlifeplugin.stats;
 import org.bukkit.entity.Player;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
+import org.bukkit.Bukkit;
 
 import java.io.File;
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 
 public class StatsManager {
@@ -60,7 +63,9 @@ public class StatsManager {
                 int wardenKilled = statsConfig.getInt("players." + uuidString + ".warden_killed", 0);
                 int enderDragonKilled = statsConfig.getInt("players." + uuidString + ".ender_dragon_killed", 0);
                 int witherKilled = statsConfig.getInt("players." + uuidString + ".wither_killed", 0);
-                playerStats.put(uuid, new PlayerStats(kills, deaths, animalsKilled, 0, 0, hostileMobsKilled, blocksMined, wardenKilled, enderDragonKilled, witherKilled));
+                int itemsCrafted = statsConfig.getInt("players." + uuidString + ".items_crafted", 0);
+                int xpCollected = statsConfig.getInt("players." + uuidString + ".xp_collected", 0);
+                playerStats.put(uuid, new PlayerStats(kills, deaths, animalsKilled, itemsCrafted, xpCollected, hostileMobsKilled, blocksMined, wardenKilled, enderDragonKilled, witherKilled));
             }
         }
     }
@@ -69,6 +74,13 @@ public class StatsManager {
         for (Map.Entry<UUID, PlayerStats> entry : playerStats.entrySet()) {
             String uuidString = entry.getKey().toString();
             PlayerStats stats = entry.getValue();
+            
+            // Save player name if available
+            Player player = Bukkit.getPlayer(entry.getKey());
+            if (player != null) {
+                statsConfig.set("players." + uuidString + ".name", player.getName());
+            }
+            
             statsConfig.set("players." + uuidString + ".kills", stats.getKills());
             statsConfig.set("players." + uuidString + ".deaths", stats.getDeaths());
             statsConfig.set("players." + uuidString + ".animals_killed", stats.getAnimalsKilled());
@@ -77,6 +89,8 @@ public class StatsManager {
             statsConfig.set("players." + uuidString + ".warden_killed", stats.getWardenKilled());
             statsConfig.set("players." + uuidString + ".ender_dragon_killed", stats.getEnderDragonKilled());
             statsConfig.set("players." + uuidString + ".wither_killed", stats.getWitherKilled());
+            statsConfig.set("players." + uuidString + ".items_crafted", stats.getItemsCrafted());
+            statsConfig.set("players." + uuidString + ".xp_collected", stats.getXpCollected());
         }
         
         try {
@@ -163,6 +177,29 @@ public class StatsManager {
     public void clearAllStats() {
         playerStats.clear();
         saveStats();
+    }
+    
+    public Set<UUID> getAllPlayerUuids() {
+        return new HashSet<>(playerStats.keySet());
+    }
+    
+    public String getPlayerName(UUID playerUuid) {
+        // Try to get the player name from the config file
+        if (statsConfig.contains("players." + playerUuid.toString() + ".name")) {
+            return statsConfig.getString("players." + playerUuid.toString() + ".name");
+        }
+        
+        // If not found in config, try to get from online player
+        Player player = Bukkit.getPlayer(playerUuid);
+        if (player != null) {
+            return player.getName();
+        }
+        
+        return null;
+    }
+    
+    public PlayerStats getPlayerStats(UUID playerUuid) {
+        return playerStats.getOrDefault(playerUuid, new PlayerStats(0, 0, 0, 0, 0, 0, 0, 0, 0, 0));
     }
 
     public static class PlayerStats {

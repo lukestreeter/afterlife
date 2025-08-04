@@ -46,10 +46,17 @@ public class LeaderboardManager {
     public List<LeaderboardEntry> getTopPlayers(StatType statType, int limit) {
         List<LeaderboardEntry> entries = new ArrayList<>();
         
-        for (Player player : Bukkit.getOnlinePlayers()) {
-            StatsManager.PlayerStats stats = StatsManager.getInstance().getPlayerStats(player);
-            int value = getStatValue(stats, statType);
-            entries.add(new LeaderboardEntry(player.getName(), value, player.getUniqueId()));
+        // Get stats from all players who have data saved
+        StatsManager statsManager = StatsManager.getInstance();
+        
+        // Load stats from saved data for all players
+        for (UUID playerUuid : statsManager.getAllPlayerUuids()) {
+            String playerName = statsManager.getPlayerName(playerUuid);
+            if (playerName != null) {
+                StatsManager.PlayerStats stats = statsManager.getPlayerStats(playerUuid);
+                int value = getStatValue(stats, statType);
+                entries.add(new LeaderboardEntry(playerName, value, playerUuid));
+            }
         }
         
         // Sort by value (descending)
