@@ -3,11 +3,14 @@ package me.yodeling_goat.afterlifeplugin.stats;
 import org.bukkit.entity.Player;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
+import org.bukkit.Bukkit;
 
 import java.io.File;
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 
 public class StatsManager {
@@ -52,14 +55,17 @@ public class StatsManager {
         if (statsConfig.contains("players")) {
             for (String uuidString : statsConfig.getConfigurationSection("players").getKeys(false)) {
                 UUID uuid = UUID.fromString(uuidString);
-                int kills = getPlayerStat(uuidString, "kills");
-                int deaths = getPlayerStat(uuidString, "deaths");
-                int animalsKilled = getPlayerStat(uuidString, "animals_killed");
-                int itemsCrafted = getPlayerStat(uuidString, "items_crafted");
-                int xpCollected = getPlayerStat(uuidString, "xp_collected");
-                int hostileMobsKilled = getPlayerStat(uuidString, "hostile_mobs_killed");
-                int blocksMined = getPlayerStat(uuidString, "blocks_mined");
-                playerStats.put(uuid, new PlayerStats(kills, deaths, animalsKilled, itemsCrafted, xpCollected, hostileMobsKilled, blocksMined));
+                int kills = statsConfig.getInt("players." + uuidString + ".kills", 0);
+                int deaths = statsConfig.getInt("players." + uuidString + ".deaths", 0);
+                int animalsKilled = statsConfig.getInt("players." + uuidString + ".animals_killed", 0);
+                int hostileMobsKilled = statsConfig.getInt("players." + uuidString + ".hostile_mobs_killed", 0);
+                int blocksMined = statsConfig.getInt("players." + uuidString + ".blocks_mined", 0);
+                int wardenKilled = statsConfig.getInt("players." + uuidString + ".warden_killed", 0);
+                int enderDragonKilled = statsConfig.getInt("players." + uuidString + ".ender_dragon_killed", 0);
+                int witherKilled = statsConfig.getInt("players." + uuidString + ".wither_killed", 0);
+                int itemsCrafted = statsConfig.getInt("players." + uuidString + ".items_crafted", 0);
+                int xpCollected = statsConfig.getInt("players." + uuidString + ".xp_collected", 0);
+                playerStats.put(uuid, new PlayerStats(kills, deaths, animalsKilled, itemsCrafted, xpCollected, hostileMobsKilled, blocksMined, wardenKilled, enderDragonKilled, witherKilled));
             }
         }
     }
@@ -68,13 +74,23 @@ public class StatsManager {
         for (Map.Entry<UUID, PlayerStats> entry : playerStats.entrySet()) {
             String uuidString = entry.getKey().toString();
             PlayerStats stats = entry.getValue();
-            setPlayerStat(uuidString, "kills", stats.getKills());
-            setPlayerStat(uuidString, "deaths", stats.getDeaths());
-            setPlayerStat(uuidString, "animals_killed", stats.getAnimalsKilled());
-            setPlayerStat(uuidString, "items_crafted", stats.getItemsCrafted());
-            setPlayerStat(uuidString, "xp_collected", stats.getXpCollected());
-            setPlayerStat(uuidString, "hostile_mobs_killed", stats.getHostileMobsKilled());
-            setPlayerStat(uuidString, "blocks_mined", stats.getBlocksMined());
+            
+            // Save player name if available
+            Player player = Bukkit.getPlayer(entry.getKey());
+            if (player != null) {
+                statsConfig.set("players." + uuidString + ".name", player.getName());
+            }
+            
+            statsConfig.set("players." + uuidString + ".kills", stats.getKills());
+            statsConfig.set("players." + uuidString + ".deaths", stats.getDeaths());
+            statsConfig.set("players." + uuidString + ".animals_killed", stats.getAnimalsKilled());
+            statsConfig.set("players." + uuidString + ".hostile_mobs_killed", stats.getHostileMobsKilled());
+            statsConfig.set("players." + uuidString + ".blocks_mined", stats.getBlocksMined());
+            statsConfig.set("players." + uuidString + ".warden_killed", stats.getWardenKilled());
+            statsConfig.set("players." + uuidString + ".ender_dragon_killed", stats.getEnderDragonKilled());
+            statsConfig.set("players." + uuidString + ".wither_killed", stats.getWitherKilled());
+            statsConfig.set("players." + uuidString + ".items_crafted", stats.getItemsCrafted());
+            statsConfig.set("players." + uuidString + ".xp_collected", stats.getXpCollected());
         }
         
         try {
@@ -85,7 +101,7 @@ public class StatsManager {
     }
     
     public PlayerStats getPlayerStats(Player player) {
-        return playerStats.computeIfAbsent(player.getUniqueId(), k -> new PlayerStats(0, 0, 0, 0, 0, 0, 0));
+        return playerStats.computeIfAbsent(player.getUniqueId(), k -> new PlayerStats(0, 0, 0, 0, 0, 0, 0, 0, 0, 0));
     }
     
     public void addKill(Player player) {
@@ -130,6 +146,62 @@ public class StatsManager {
         // Don't save immediately - will be saved on plugin disable
     }
 
+    public void addWardenKill(Player player) {
+        PlayerStats stats = getPlayerStats(player);
+        stats.addWardenKill();
+        // Don't save immediately - will be saved on plugin disable
+    }
+
+    public void addEnderDragonKill(Player player) {
+        PlayerStats stats = getPlayerStats(player);
+        stats.addEnderDragonKill();
+        // Don't save immediately - will be saved on plugin disable
+    }
+
+    public void addWitherKill(Player player) {
+        PlayerStats stats = getPlayerStats(player);
+        stats.addWitherKill();
+        // Don't save immediately - will be saved on plugin disable
+    }
+
+    public void resetPlayerStats(Player player) {
+        playerStats.put(player.getUniqueId(), new PlayerStats(0, 0, 0, 0, 0, 0, 0, 0, 0, 0));
+        saveStats();
+    }
+
+    public void clearPlayerStats(Player player) {
+        playerStats.remove(player.getUniqueId());
+        saveStats();
+    }
+
+    public void clearAllStats() {
+        playerStats.clear();
+        saveStats();
+    }
+    
+    public Set<UUID> getAllPlayerUuids() {
+        return new HashSet<>(playerStats.keySet());
+    }
+    
+    public String getPlayerName(UUID playerUuid) {
+        // Try to get the player name from the config file
+        if (statsConfig.contains("players." + playerUuid.toString() + ".name")) {
+            return statsConfig.getString("players." + playerUuid.toString() + ".name");
+        }
+        
+        // If not found in config, try to get from online player
+        Player player = Bukkit.getPlayer(playerUuid);
+        if (player != null) {
+            return player.getName();
+        }
+        
+        return null;
+    }
+    
+    public PlayerStats getPlayerStats(UUID playerUuid) {
+        return playerStats.getOrDefault(playerUuid, new PlayerStats(0, 0, 0, 0, 0, 0, 0, 0, 0, 0));
+    }
+
     public static class PlayerStats {
         private int kills;
         private int deaths;
@@ -138,15 +210,21 @@ public class StatsManager {
         private int xpCollected;
         private int hostileMobsKilled;
         private int blocksMined;
+        private int wardenKilled;
+        private int enderDragonKilled;
+        private int witherKilled;
 
-        public PlayerStats(int kills, int deaths, int animalsKilled, int hostileMobsKilled, int itemsCrafted, int xpCollected, int blocksMined) {
+        public PlayerStats(int kills, int deaths, int animalsKilled, int itemsCrafted, int xpCollected, int hostileMobsKilled, int blocksMined, int wardenKilled, int enderDragonKilled, int witherKilled) {
             this.kills = kills;
             this.deaths = deaths;
             this.animalsKilled = animalsKilled;
-            this.hostileMobsKilled = hostileMobsKilled;
             this.itemsCrafted = itemsCrafted;
             this.xpCollected = xpCollected;
+            this.hostileMobsKilled = hostileMobsKilled;
             this.blocksMined = blocksMined;
+            this.wardenKilled = wardenKilled;
+            this.enderDragonKilled = enderDragonKilled;
+            this.witherKilled = witherKilled;
         }
         
         public int getKills() {
@@ -167,6 +245,18 @@ public class StatsManager {
 
         public int getBlocksMined() {
             return blocksMined;
+        }
+
+        public int getWardenKilled() {
+            return wardenKilled;
+        }
+
+        public int getEnderDragonKilled() {
+            return enderDragonKilled;
+        }
+
+        public int getWitherKilled() {
+            return witherKilled;
         }
 
         public int getItemsCrafted() {
@@ -210,6 +300,18 @@ public class StatsManager {
 
         public void addBlockMined() {
             blocksMined++;
+        }
+
+        public void addWardenKill() {
+            wardenKilled++;
+        }
+
+        public void addEnderDragonKill() {
+            enderDragonKilled++;
+        }
+
+        public void addWitherKill() {
+            witherKilled++;
         }
     }
 } 
