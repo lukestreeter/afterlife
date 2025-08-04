@@ -65,6 +65,10 @@ public class AfterlifeManager {
     public static void sendToAfterlife(Player player) {
         afterlifePlayers.add(player.getUniqueId());
         saveAfterlifeState();
+        
+        // Reset fireball count for new afterlife session
+        me.yodeling_goat.afterlifeplugin.afterlife.util.MobMorphManager.resetFireballsUsed(player);
+        
         Bukkit.getPluginManager().callEvent(new PlayerEnterAfterlifeEvent(player));
     }
 
