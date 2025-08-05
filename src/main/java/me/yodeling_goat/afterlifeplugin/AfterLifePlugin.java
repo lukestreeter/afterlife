@@ -9,6 +9,7 @@ import org.bukkit.entity.Player;
 
 // Karma system
 import me.yodeling_goat.afterlifeplugin.karma.KarmaManager;
+import me.yodeling_goat.afterlifeplugin.karma.AuraDealer;
 
 // Afterlife system
 import me.yodeling_goat.afterlifeplugin.afterlife.AfterlifeManager;
@@ -29,10 +30,17 @@ public class AfterLifePlugin extends JavaPlugin implements Listener {
         // Register managers that implement Listener
         KarmaManager karmaManager = new KarmaManager();
         GraveManager graveManager = new GraveManager();
+        AuraDealer auraDealer = new AuraDealer();
         
         // Register managers as listeners
         Bukkit.getPluginManager().registerEvents(karmaManager, this);
         Bukkit.getPluginManager().registerEvents(graveManager, this);
+        Bukkit.getPluginManager().registerEvents(auraDealer, this);
+        
+        // Register commands
+        getCommand("auragive").setExecutor(auraDealer);
+        getCommand("auraremove").setExecutor(auraDealer);
+        getCommand("auradealer").setExecutor(auraDealer);
         
         // Register afterlife listeners
         Bukkit.getPluginManager().registerEvents(new AfterlifeEffectsListener(), this);

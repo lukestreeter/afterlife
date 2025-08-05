@@ -3,3 +3,14 @@ version: ${project.version}
 main: me.yodeling_goat.afterlifeplugin.AfterLifePlugin
 api-version: 1.13
 description: send your players to heaven or hell!
+
+commands:
+  auragive:
+    description: Give karma points to a player (Whitelisted players only)
+    usage: /auragive <player> [points]
+  auraremove:
+    description: Remove karma points from a player (Whitelisted players only)
+    usage: /auraremove <player> [points]
+  auradealer:
+    description: Manage aura dealers (Whitelisted players only)
+    usage: /auradealer <add|remove> <player>
