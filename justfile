@@ -15,6 +15,10 @@ setup-server: check-deps
             echo 'eula=true' > eula.txt \
         ); \
     fi
+    # Create server.properties with operator permissions
+    if [ ! -f dev-server/server.properties ]; then \
+        cp dev-server.properties dev-server/server.properties; \
+    fi
 
 deploy: check-deps
     mvn clean package
