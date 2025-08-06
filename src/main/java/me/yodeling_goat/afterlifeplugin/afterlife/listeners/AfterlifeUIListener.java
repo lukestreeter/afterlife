@@ -2,14 +2,9 @@ package me.yodeling_goat.afterlifeplugin.afterlife.listeners;
 
 import org.bukkit.event.Listener;
 import org.bukkit.event.EventHandler;
-import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.entity.Player;
-import org.bukkit.event.player.PlayerQuitEvent;
-import org.bukkit.event.player.PlayerChangedWorldEvent;
-import org.bukkit.event.player.PlayerGameModeChangeEvent;
 import org.bukkit.event.player.PlayerRespawnEvent;
 import me.yodeling_goat.afterlifeplugin.afterlife.AfterlifeManager;
-import me.yodeling_goat.afterlifeplugin.afterlife.events.PlayerEnterAfterlifeEvent;
 import org.bukkit.Bukkit;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.potion.PotionEffect;
@@ -22,38 +17,11 @@ import org.bukkit.persistence.PersistentDataType;
 public class AfterlifeUIListener implements Listener {
     
     @EventHandler
-    public void onPlayerJoin(PlayerJoinEvent event) {
-        Player player = event.getPlayer();
-        if (AfterlifeManager.isInAfterlife(player)) {
-            Bukkit.getScheduler().runTaskLater(Bukkit.getPluginManager().getPlugin("AfterLifePlugin"), () -> {
-                hideHealthAndHungerBar(player);
-            }, 5L);
-        }
-    }
-    
-    @EventHandler
-    public void onPlayerEnterAfterlife(PlayerEnterAfterlifeEvent event) {
-        Player player = event.getPlayer();
-        hideHealthAndHungerBar(player);
-    }
-    
-    
-    @EventHandler
-    public void onPlayerChangedWorld(PlayerChangedWorldEvent event) {
-        Player player = event.getPlayer();
-        if (AfterlifeManager.isInAfterlife(player)) {
-            Bukkit.getScheduler().runTaskLater(Bukkit.getPluginManager().getPlugin("AfterLifePlugin"), () -> {
-                hideHealthAndHungerBar(player);
-            }, 3L);
-        }
-    }
-    
-    @EventHandler
     public void onPlayerRespawn(PlayerRespawnEvent event) {
         Player player = event.getPlayer();
         if (AfterlifeManager.isInAfterlife(player)) {
             Bukkit.getScheduler().runTaskLater(Bukkit.getPluginManager().getPlugin("AfterLifePlugin"), () -> {
-                hideHealthAndHungerBar(player);
+                AfterlifeManager.applyPermanentAfterlifeEffects(player);
             }, 3L);
         }
     }
