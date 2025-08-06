@@ -14,6 +14,7 @@ import me.yodeling_goat.afterlifeplugin.karma.KarmaManager;
 import me.yodeling_goat.afterlifeplugin.afterlife.AfterlifeManager;
 import me.yodeling_goat.afterlifeplugin.afterlife.listeners.AfterlifeEffectsListener;
 import me.yodeling_goat.afterlifeplugin.afterlife.listeners.AfterlifeRestrictionListener;
+import me.yodeling_goat.afterlifeplugin.afterlife.listeners.AfterlifeSoundListener;
 import me.yodeling_goat.afterlifeplugin.afterlife.listeners.PlayerDeathListener;
 import me.yodeling_goat.afterlifeplugin.afterlife.listeners.EntityDeathListener;
 
@@ -37,6 +38,7 @@ public class AfterLifePlugin extends JavaPlugin implements Listener {
         // Register afterlife listeners
         Bukkit.getPluginManager().registerEvents(new AfterlifeEffectsListener(), this);
         Bukkit.getPluginManager().registerEvents(new AfterlifeRestrictionListener(), this);
+        Bukkit.getPluginManager().registerEvents(new AfterlifeSoundListener(), this);
         Bukkit.getPluginManager().registerEvents(new PlayerDeathListener(), this);
         Bukkit.getPluginManager().registerEvents(new EntityDeathListener(), this);
         

@@ -1,0 +1,6 @@
+name: WardenMute
+version: 1.0
+main: com.yourname.wardenmute.WardenMutePlugin
+api-version: 1.19
+author: YourName
+description: Makes dead players invisible to Wardens like creative mode 

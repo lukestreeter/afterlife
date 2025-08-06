@@ -41,8 +41,14 @@ public class AfterlifeManager {
         player.setFlying(true);
         
         // Reapply permanent potion effects
+        player.addPotionEffect(new PotionEffect(PotionEffectType.INVISIBILITY, Integer.MAX_VALUE, 0, false, false));
         player.addPotionEffect(new PotionEffect(PotionEffectType.GLOWING, Integer.MAX_VALUE, 0, false, false));
         player.addPotionEffect(new PotionEffect(PotionEffectType.NIGHT_VISION, Integer.MAX_VALUE, 0, false, false));
+        
+        // Remove any effects that might make the player detectable to Warden
+        player.removePotionEffect(PotionEffectType.SLOW);
+        player.removePotionEffect(PotionEffectType.SLOW_FALLING);
+        player.removePotionEffect(PotionEffectType.LEVITATION);
         
         // Clear inventory (since afterlife players shouldn't have items)
         player.getInventory().clear();
