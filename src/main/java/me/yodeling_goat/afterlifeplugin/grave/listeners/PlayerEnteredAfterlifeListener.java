@@ -6,6 +6,7 @@ import org.bukkit.event.Listener;
 import me.yodeling_goat.afterlifeplugin.afterlife.events.PlayerEnterAfterlifeEvent;
 import me.yodeling_goat.afterlifeplugin.grave.GravestoneManager;
 import me.yodeling_goat.afterlifeplugin.AfterLifePlugin;
+import org.bukkit.Bukkit;
 
 
 public class PlayerEnteredAfterlifeListener implements Listener {
@@ -19,7 +20,14 @@ public class PlayerEnteredAfterlifeListener implements Listener {
         Player player = event.getPlayer();
         if (player.getLastDamageCause() != null) {
             String deathCause = player.getLastDamageCause().getCause().toString();
-            GravestoneManager.createGravestone(player, deathCause);
+            
+            // Delay grave creation by 5 minutes (6000 ticks = 5 minutes)
+            Bukkit.getScheduler().runTaskLater(AfterLifePlugin.getInstance(), () -> {
+                GravestoneManager.createGravestone(player, deathCause);
+            }, 6000L);
+            
+            // Notify player about the delay
+            player.sendMessage("§7[AfterLife] §fYour grave will appear in 5 minutes to prevent immediate looting.");
         }
     }
 }

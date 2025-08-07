@@ -4,6 +4,17 @@
 grave:
   # Enable or disable the grave system (creates gravestones, caskets, and chests)
   enabled: false
+  
+  # Death particles configuration
+  death_particles:
+    # Number of NETHER_WART_BLOCK particles to spawn on death
+    count: 300
+    # Particle spread area (x, y, z offsets) - smaller values = more concentrated
+    spread_x: 0.3
+    spread_y: 0.5
+    spread_z: 0.3
+    # Particle speed (higher values make particles move faster/appear bigger)
+    speed: 0.8
 
 # Afterlife System Settings
 afterlife:
