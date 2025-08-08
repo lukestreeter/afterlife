@@ -10,7 +10,7 @@ import me.yodeling_goat.afterlifeplugin.afterlife.AfterlifeManager;
 
 public class PlayerDeathListener implements Listener {
     @EventHandler
-    public void onFinalDamge(EntityDamageEvent event) {
+    public void onFinalDamage(EntityDamageEvent event) {
         Entity entity = event.getEntity();
         if (!(entity instanceof Player)) {
             return;

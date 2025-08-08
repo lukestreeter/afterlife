@@ -70,7 +70,7 @@ public class EntityDeathListener implements Listener {
             case WITHER_SKELETON:
                 karmaChange = 5;
                 break;
-            case PIG_ZOMBIE:
+            case ZOMBIFIED_PIGLIN: // PIG_ZOMBIE was renamed in newer versions
                 karmaChange = -2;
                 break;
             case MAGMA_CUBE:

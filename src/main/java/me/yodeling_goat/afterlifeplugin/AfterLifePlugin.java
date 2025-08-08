@@ -17,6 +17,7 @@ import me.yodeling_goat.afterlifeplugin.afterlife.listeners.AfterlifeRestriction
 import me.yodeling_goat.afterlifeplugin.afterlife.listeners.AfterlifeSoundListener;
 import me.yodeling_goat.afterlifeplugin.afterlife.listeners.PlayerDeathListener;
 import me.yodeling_goat.afterlifeplugin.afterlife.listeners.EntityDeathListener;
+import me.yodeling_goat.afterlifeplugin.afterlife.listeners.EntityProximityListener;
 
 // Grave system
 import me.yodeling_goat.afterlifeplugin.grave.GraveManager;
@@ -26,6 +27,9 @@ public class AfterLifePlugin extends JavaPlugin implements Listener {
     @Override
     public void onEnable() {
         getLogger().info("AfterLifePlugin is starting up...");
+        
+        // Initialize managers
+        AfterlifeManager.initialize(this);
         
         // Register managers that implement Listener
         KarmaManager karmaManager = new KarmaManager();
@@ -41,6 +45,7 @@ public class AfterLifePlugin extends JavaPlugin implements Listener {
         Bukkit.getPluginManager().registerEvents(new AfterlifeSoundListener(), this);
         Bukkit.getPluginManager().registerEvents(new PlayerDeathListener(), this);
         Bukkit.getPluginManager().registerEvents(new EntityDeathListener(), this);
+        Bukkit.getPluginManager().registerEvents(new EntityProximityListener(this), this);
         
         // Register this plugin as a listener for player join events
         Bukkit.getPluginManager().registerEvents(this, this);
