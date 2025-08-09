@@ -145,9 +145,9 @@ public class AfterlifeManager {
         Location loc = new Location(player.getWorld(), player.getLocation().getX(), 200, player.getLocation().getZ());
         player.teleport(loc);
         
-        // Apply temporary confusion and blindness effects
-        player.addPotionEffect(new PotionEffect(PotionEffectType.CONFUSION, 300, 50));
-        player.addPotionEffect(new PotionEffect(PotionEffectType.BLINDNESS, 300, 50));
+        // Apply temporary confusion and blindness effects for 10 seconds (200 ticks)
+        player.addPotionEffect(new PotionEffect(PotionEffectType.CONFUSION, 200, 50));
+        player.addPotionEffect(new PotionEffect(PotionEffectType.BLINDNESS, 200, 50));
     }
 
     public static void applyAllAfterlifeEffects(Player player) {
