@@ -11,7 +11,9 @@ setup-server: check-deps
     fi
     if [ ! -f dev-server/paper.jar ]; then \
         (cd dev-server && \
-            curl -s https://api.papermc.io/v2/projects/paper | jq -r '.versions[-1]' | xargs -I {} curl -s https://api.papermc.io/v2/projects/paper/versions/{}/builds | jq -r '.builds[-1].build' | xargs -I {build} sh -c 'curl -O https://api.papermc.io/v2/projects/paper/versions/$(curl -s https://api.papermc.io/v2/projects/paper | jq -r ".versions[-1]")/builds/{build}/downloads/paper-$(curl -s https://api.papermc.io/v2/projects/paper | jq -r ".versions[-1]")-{build}.jar && mv paper-*.jar paper.jar'; \
+            VERSION=$(curl -s https://api.papermc.io/v2/projects/paper | jq -r '[.versions[] | select(test("^[0-9]+\\.[0-9]+\\.[0-9]+$"))] | last'); \
+            curl -s https://api.papermc.io/v2/projects/paper/versions/$VERSION/builds | jq -r '.builds[-1].build' | xargs -I {build} curl -O https://api.papermc.io/v2/projects/paper/versions/$VERSION/builds/{build}/downloads/paper-$VERSION-{build}.jar; \
+            mv paper-*.jar paper.jar; \
             echo 'eula=true' > eula.txt \
         ); \
     fi
