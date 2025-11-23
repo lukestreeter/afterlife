@@ -1,0 +1,6 @@
+name: AfterLifePlugin
+version: 1.0-SNAPSHOT
+main: me.yodeling_goat.afterlifeplugin.AfterLifePlugin
+api-version: 1.16
+author: YourName
+description: Afterlife and karma system with mob spectate 

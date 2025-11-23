@@ -8,9 +8,9 @@ Chain of Events
  - location is inescapable for 7 day period of ban
    - surroundings are indestructible
    - player is reteleported if location of player exits paradise perimeter
- - program sends player message saying “7 day ban period initiated” ( or something more playful...it is a game)
+ - program sends player message saying "7 day ban period initiated" ( or something more playful...it is a game)
  - once the ban is over player is teleported back to lobby (original join location, not where they die)
- - player is sent a message saying “your 7-day ban period is over!” (or something more fun)
+ - player is sent a message saying "your 7-day ban period is over!" (or something more fun)
 
 
 # REQUIREMENTS
@@ -38,8 +38,6 @@ It could also depend on what you have built, materials you've used, entities you
 -Need to have a way to schedule different Karmas. So you can have different amount of Karmas different days- One day you can get 0 karma from nothing and one day you can get a lot and one day where you can get negative karma. There can also be rewards for reaching certain milestones in Karma! 
 - A comppass that serves as a navigator to other worlds/dimension when in the afterlife!
 - A lobby to select different gamemodes? Hardcore Survival or something crazy that we might stir up!
-
-
 
 [minecraft]: https://www.minecraft.net
 [spigot]: https://www.spigotmc.org/
