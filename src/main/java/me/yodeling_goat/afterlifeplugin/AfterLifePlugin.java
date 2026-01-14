@@ -21,9 +21,14 @@ import me.yodeling_goat.afterlifeplugin.afterlife.listeners.EntityDeathListener;
 // Stats system
 import me.yodeling_goat.afterlifeplugin.stats.StatsManager;
 import me.yodeling_goat.afterlifeplugin.stats.listeners.PlayerStatsListener;
+import me.yodeling_goat.afterlifeplugin.stats.listeners.BossKillListener;
 
 // Grave system
 import me.yodeling_goat.afterlifeplugin.grave.listeners.PlayerEnteredAfterlifeListener;
+
+// Leaderboard system
+import me.yodeling_goat.afterlifeplugin.leaderboard.listeners.LeaderboardListener;
+import me.yodeling_goat.afterlifeplugin.leaderboard.CompassManager;
 
 public class AfterLifePlugin extends JavaPlugin implements Listener {
     
@@ -58,9 +63,13 @@ public class AfterLifePlugin extends JavaPlugin implements Listener {
 
         // Register stats listeners
         Bukkit.getPluginManager().registerEvents(new PlayerStatsListener(), this);
+        Bukkit.getPluginManager().registerEvents(new BossKillListener(), this);
 
         // Register grave listeners
         Bukkit.getPluginManager().registerEvents(new PlayerEnteredAfterlifeListener(), this);
+
+        // Register leaderboard listeners
+        Bukkit.getPluginManager().registerEvents(new LeaderboardListener(), this);
         
         // Register this plugin as a listener for player join events
         Bukkit.getPluginManager().registerEvents(this, this);
@@ -71,13 +80,6 @@ public class AfterLifePlugin extends JavaPlugin implements Listener {
         }, 6000L, 6000L); // 6000 ticks = 5 minutes
 
         getLogger().info("AfterLifePlugin has been enabled!");
-    }
-    
-    @EventHandler
-    public void onPlayerJoin(PlayerJoinEvent event) {
-        Player player = event.getPlayer();
-        KarmaManager.initializeKarmaDisplay(player);
-        AfterlifeManager.initializeAfterlifeState(player);
     }
     
     @Override
@@ -91,5 +93,15 @@ public class AfterLifePlugin extends JavaPlugin implements Listener {
         StatsManager.getInstance().saveStats();
 
         getLogger().info("AfterLifePlugin has been disabled!");
+    }
+    
+    @EventHandler
+    public void onPlayerJoin(PlayerJoinEvent event) {
+        Player player = event.getPlayer();
+        KarmaManager.initializeKarmaDisplay(player);
+        AfterlifeManager.initializeAfterlifeState(player);
+        
+        // Give leaderboard compass to new players
+        CompassManager.giveLeaderboardCompass(player);
     }
 }

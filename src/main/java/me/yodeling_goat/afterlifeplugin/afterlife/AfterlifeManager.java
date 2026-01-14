@@ -88,6 +88,17 @@ public class AfterlifeManager {
         }
         return players;
     }
+    
+    public static void clearAllAfterlifePlayers() {
+        for (UUID uuid : new HashSet<>(afterlifePlayers)) {
+            Player player = Bukkit.getPlayer(uuid);
+            if (player != null) {
+                removeAfterlifeEffects(player);
+            }
+        }
+        afterlifePlayers.clear();
+        saveAfterlifeState();
+    }
 
     public static void initializeAfterlifeState(Player player) {
         if (isInAfterlife(player)) {
